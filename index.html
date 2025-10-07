@@ -86,7 +86,7 @@
       headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
 
       // Load CSV
-      fetch('data/data.csv')
+      fetch('data.csv')
         .then(res => res.text())
         .then(text => {
           const lines = text.trim().split('\n');
