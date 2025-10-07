@@ -49,7 +49,7 @@
       <header>
         <div>
           <h1>Te Tai Hou Teams - 2025</h1>
-          <p class="muted">Team registration table loaded from data.csv</p>
+          <p class="muted">Team registration table loaded from data folder</p>
         </div>
 
         <div class="controls">
@@ -60,7 +60,7 @@
 
       <div class="table-wrap" role="region" aria-labelledby="table-caption">
         <table id="dataTable" aria-describedby="table-caption">
-          <caption id="table-caption">Te Tai Hou Teams 2025 — Members List (data loaded from data.csv)</caption>
+          <caption id="table-caption">Te Tai Hou Teams 2025 — Members List (data loaded from data/data.csv)</caption>
           <thead>
             <tr id="table-header"></tr>
           </thead>
@@ -79,41 +79,58 @@
       const exportBtn = document.getElementById('export');
 
       let allRows = [];
+      let sortColumn = null;
+      let sortAsc = true;
 
-      // Load data from CSV file
-      fetch('data.csv')
+      const headers = ['First Name', 'Last Name', 'Email', 'Contact Number', 'Eligible Team', 'Indicative Selection'];
+      headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+
+      // Load CSV
+      fetch('data/data.csv')
         .then(res => res.text())
         .then(text => {
           const lines = text.trim().split('\n');
-          const headers = ['First Name', 'Last Name', 'Email', 'Contact Number', 'Eligible Team', 'Indicative Selection'];
-          const rows = lines.slice(1).map(line => line.split(','));
-
-          // Render headers
-          headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
-
-          // Store all data rows
-          allRows = rows;
-
-          renderRows(rows);
+          allRows = lines.slice(1).map(line => line.split(','));
+          renderRows(allRows);
+          addSorting();
         });
 
       function renderRows(rows){
         tbody.innerHTML = rows.map(cols => `<tr>${cols.map(c => `<td>${c}</td>`).join('')}</tr>`).join('');
       }
 
-      // Filter function
+      // Filter
       search.addEventListener('input', () => {
         const q = search.value.trim().toLowerCase();
-        if (!q) { renderRows(allRows); return; }
-        const filtered = allRows.filter(cols => cols.join(' ').toLowerCase().includes(q));
+        const filtered = allRows.filter(cols => cols.some(c => c.toLowerCase().includes(q)));
         renderRows(filtered);
       });
 
-      // Export visible rows to CSV
+      // Sorting
+      function addSorting(){
+        const ths = headerRow.querySelectorAll('th');
+        ths.forEach((th, idx) => {
+          th.addEventListener('click', () => {
+            if(sortColumn === idx) sortAsc = !sortAsc;
+            else { sortColumn = idx; sortAsc = true; }
+
+            const sorted = [...allRows].sort((a,b) => {
+              const valA = a[idx].toLowerCase();
+              const valB = b[idx].toLowerCase();
+              if(valA < valB) return sortAsc ? -1 : 1;
+              if(valA > valB) return sortAsc ? 1 : -1;
+              return 0;
+            });
+            renderRows(sorted);
+          });
+        });
+      }
+
+      // Export CSV
       exportBtn.addEventListener('click', () => {
         const rows = Array.from(tbody.rows).map(r => Array.from(r.cells).map(c => c.textContent));
-        const csv = [['First Name', 'Last Name', 'Email', 'Contact Number', 'Eligible Team', 'Indicative Selection']].concat(rows)
-          .map(r => r.map(cell => '"' + cell.replace(/"/g,'""') + '"').join(',')).join('\n');
+        const csv = [headers].concat(rows)
+          .map(r => r.map(cell => '"'+cell.replace(/"/g,'""')+'"').join(',')).join('\n');
         const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
