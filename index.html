@@ -1,104 +1,144 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Te Tai Hou Teams - 2025</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #fafafa; color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background-color: #f0f0f0; cursor: pointer; }
-        tr:hover { background-color: #f9f9f9; }
-        #search { margin-top: 20px; padding: 8px; width: 100%; max-width: 400px; }
-        button { margin-top: 10px; padding: 6px 12px; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Te Tai Hou Teams - 2025</title>
+  <style>
+    :root{
+      --bg:#f7fafc;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#2563eb;
+      --border:#e6edf3;
+    }
+    html,body{height:100%;margin:0;font-family:Inter, Roboto, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial; background:var(--bg); color:#0f172a}
+    .wrap{max-width:1000px;margin:36px auto;padding:20px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    header h1{font-size:20px;margin:0}
+    header p{margin:0;color:var(--muted);font-size:13px}
+
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn{background:var(--accent);color:white;padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+    .btn:active{transform:translateY(1px)}
+    .input{padding:8px;border-radius:8px;border:1px solid var(--border)}
+
+    .table-wrap{overflow:auto;border-radius:8px}
+    table{width:100%;border-collapse:collapse;min-width:720px}
+    caption{padding:8px 0;color:var(--muted);font-size:13px;text-align:left}
+
+    thead th{position:sticky;top:0;background:white;padding:12px 16px;text-align:left;font-size:13px;border-bottom:2px solid var(--border);cursor:pointer;user-select:none}
+    tbody td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px}
+    tbody tr:nth-child(even){background:linear-gradient(180deg, rgba(0,0,0,0.015), transparent)}
+    tbody tr:hover{background:rgba(37,99,235,0.03)}
+    .muted{color:var(--muted);font-size:13px}
+
+    @media (max-width:640px){
+      header{flex-direction:column;align-items:flex-start;gap:8px}
+      table{min-width:600px}
+    }
+
+    th:focus{outline:3px solid rgba(37,99,235,0.18)}
+    button:focus{outline:3px solid rgba(37,99,235,0.18)}
+  </style>
 </head>
 <body>
-    <div style="display: flex; align-items: center; justify-content: center; margin-top: 20px;">
-        <img src="images/logo.png" alt="Te Tai Hou Logo" style="height: 80px; margin-right: 15px;">
-        <h1 style="margin: 0;">Te Tai Hou Teams - 2025</h1>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <div>
+          <h1>Te Tai Hou Teams - 2025</h1>
+          <p class="muted">Team registration table loaded from data folder</p>
+        </div>
+
+        <div class="controls">
+          <input id="search" class="input" type="search" placeholder="Filter by name, email or team" aria-label="Filter table" />
+          <button id="export" class="btn">Export CSV</button>
+        </div>
+      </header>
+
+      <div class="table-wrap" role="region" aria-labelledby="table-caption">
+        <table id="dataTable" aria-describedby="table-caption">
+          <caption id="table-caption">Te Tai Hou Teams 2025 — Members List (data loaded from data/data.csv)</caption>
+          <thead>
+            <tr id="table-header"></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
-    <hr style="margin: 20px 0;">
+  </div>
 
-    <input type="text" id="search" placeholder="Search table...">
-    <table id="data-table"></table>
-    <button id="export">Export Filtered Data</button>
+  <script>
+    (function(){
+      const table = document.getElementById('dataTable');
+      const tbody = table.tBodies[0];
+      const headerRow = document.getElementById('table-header');
+      const search = document.getElementById('search');
+      const exportBtn = document.getElementById('export');
 
-    <script>
-        const table = document.getElementById('data-table');
-        const search = document.getElementById('search');
-        const exportBtn = document.getElementById('export');
+      let allRows = [];
+      let sortColumn = null;
+      let sortAsc = true;
 
-        let allRows = [];
-        let sortColumn = null;
-        let sortAsc = true;
+      const headers = ['First Name', 'Last Name', 'Email', 'Contact Number', 'Eligible Team', 'Indicative Selection'];
+      headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
 
-        fetch('data/data.csv')
-            .then(response => response.text())
-            .then(text => {
-                const lines = text.trim().split('\n');
-                const headers = lines[0].split(',');
-                const rows = lines.slice(1).map(line => line.split(','));
+      // Load CSV
+      fetch('data.csv')
+        .then(res => res.text())
+        .then(text => {
+          const lines = text.trim().split('\n');
+          allRows = lines.slice(1).map(line => line.split(','));
+          renderRows(allRows);
+          addSorting();
+        });
 
-                const headerRow = document.createElement('tr');
-                headers.forEach((header, i) => {
-                    const th = document.createElement('th');
-                    th.textContent = header.trim();
-                    th.addEventListener('click', () => sortTable(i));
-                    headerRow.appendChild(th);
-                });
-                table.appendChild(headerRow);
+      function renderRows(rows){
+        tbody.innerHTML = rows.map(cols => `<tr>${cols.map(c => `<td>${c}</td>`).join('')}</tr>`).join('');
+      }
 
-                allRows = rows;
-                renderRows(allRows);
-            });
+      // Filter
+      search.addEventListener('input', () => {
+        const q = search.value.trim().toLowerCase();
+        const filtered = allRows.filter(cols => cols.some(c => c.toLowerCase().includes(q)));
+        renderRows(filtered);
+      });
 
-        function renderRows(rows) {
-            table.querySelectorAll('tr:not(:first-child)').forEach(tr => tr.remove());
-            rows.forEach(row => {
-                const tr = document.createElement('tr');
-                row.forEach(cell => {
-                    const td = document.createElement('td');
-                    td.textContent = cell.trim();
-                    tr.appendChild(td);
-                });
-                table.appendChild(tr);
-            });
-        }
+      // Sorting
+      function addSorting(){
+        const ths = headerRow.querySelectorAll('th');
+        ths.forEach((th, idx) => {
+          th.addEventListener('click', () => {
+            if(sortColumn === idx) sortAsc = !sortAsc;
+            else { sortColumn = idx; sortAsc = true; }
 
-        function sortTable(index) {
-            if (sortColumn === index) sortAsc = !sortAsc; else { sortColumn = index; sortAsc = true; }
-            const sorted = [...allRows].sort((a, b) => {
-                const valA = a[index].toLowerCase();
-                const valB = b[index].toLowerCase();
-                if (valA < valB) return sortAsc ? -1 : 1;
-                if (valA > valB) return sortAsc ? 1 : -1;
-                return 0;
+            const sorted = [...allRows].sort((a,b) => {
+              const valA = a[idx].toLowerCase();
+              const valB = b[idx].toLowerCase();
+              if(valA < valB) return sortAsc ? -1 : 1;
+              if(valA > valB) return sortAsc ? 1 : -1;
+              return 0;
             });
             renderRows(sorted);
-        }
-
-        search.addEventListener('input', () => {
-            const q = search.value.trim().toLowerCase();
-            const filtered = allRows.filter(cols =>
-                cols.some(c => c.toLowerCase().includes(q))
-            );
-            renderRows(filtered);
+          });
         });
+      }
 
-        exportBtn.addEventListener('click', () => {
-            const rows = Array.from(table.querySelectorAll('tr'));
-            const csvContent = rows.map(r =>
-                Array.from(r.children).map(td => td.textContent).join(',')
-            ).join('\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'filtered_data.csv';
-            link.click();
-        });
-    </script>
+      // Export CSV
+      exportBtn.addEventListener('click', () => {
+        const rows = Array.from(tbody.rows).map(r => Array.from(r.cells).map(c => c.textContent));
+        const csv = [headers].concat(rows)
+          .map(r => r.map(cell => '"'+cell.replace(/"/g,'""')+'"').join(',')).join('\n');
+        const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'TeTaiHouTeams2025.csv';
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      });
+    })();
+  </script>
 </body>
 </html>
