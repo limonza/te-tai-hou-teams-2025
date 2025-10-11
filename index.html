@@ -11,32 +11,26 @@
       --light-bg: #F9FAFB;
       --border: #E5E7EB;
       --text-dark: #111827;
-      --text-light: #6B7280;
     }
 
     body {
       font-family: 'Segoe UI', Roboto, Arial, sans-serif;
       background: var(--light-bg);
       color: var(--text-dark);
-      margin: 0;
-      padding: 30px;
+      margin: 30px;
     }
 
     header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
+      gap: 15px;
+      margin-bottom: 20px;
     }
 
     header h1 {
       margin: 0;
-      flex: 1;
-      text-align: center;
       font-size: 32px;
       color: var(--primary);
-      letter-spacing: 0.5px;
     }
 
     header img {
@@ -46,7 +40,7 @@
     hr {
       border: none;
       border-top: 3px solid var(--primary);
-      margin: 20px 0 30px;
+      margin-bottom: 30px;
     }
 
     input, select, button {
@@ -90,7 +84,6 @@
       padding: 8px 12px;
       border-radius: 8px;
       font-size: 20px;
-      letter-spacing: 0.3px;
     }
 
     .table-wrapper {
@@ -114,9 +107,7 @@
 
     th {
       background: #F3F4F6;
-      color: var(--text-dark);
       font-weight: 600;
-      font-size: 14px;
     }
 
     tr:hover td {
@@ -125,12 +116,14 @@
   </style>
 </head>
 <body>
+
   <header>
-    <h1>Te Tai Hou Teams - 2025</h1>
-    <a href="https://www.poriruaheatbasketballclub.org" target="_blank">
-      <img src="images/logo.png" alt="Porirua Heat Logo">
+    <a href="https://www.poriruaheatbasketballclub.org" target="_blank" title="Visit Porirua Heat Basketball Club">
+      <img src="images/logo.png" alt="Te Tai Hou Logo">
     </a>
+    <h1>Te Tai Hou Teams - 2025</h1>
   </header>
+
   <hr>
 
   <div>
@@ -154,6 +147,7 @@
     let allRows = [];
     let indicativeIndex = -1;
 
+    // Custom group order
     const groupOrder = [
       "10U Dev", "10U Elite",
       "12U Dev", "12U Elite",
