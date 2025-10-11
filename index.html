@@ -45,7 +45,7 @@ header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
 }
 
 #table-container {
-  width: 50%;
+  width: 40%;
   max-width: 800px;
   margin: 0 auto;
   overflow-x: auto;
@@ -57,11 +57,14 @@ header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  table-layout: fixed;
 }
 
 #main-table tbody td {
   padding: 10px;
   border-bottom: 1px solid #e2e8f0;
+  width: 50%; /* Two columns evenly split */
+  word-wrap: break-word;
 }
 
 /* --- Group headers --- */
@@ -104,8 +107,16 @@ header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
   max-height: 0 !important;
 }
 
+/* Sort indicator */
+.sortable {
+  cursor: pointer;
+  text-decoration: underline;
+  color: #2b6cb0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
+  #table-container { width: 100%; }
   #main-table, tbody, td, tr {
     display: block;
   }
@@ -160,22 +171,22 @@ fetch('teams.csv')
   .then(text => {
     const lines = text.trim().split('\n').map(l => l.split(','));
     headers = lines[0].map(h => h.trim());
-    
+
     const groupIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
 
-    // Remove column from headers (for display only)
     if(groupIndex >= 0) headers.splice(groupIndex,1);
 
     allRows = lines.slice(1).map(r => {
       const rowCopy = [...r];
       const groupValue = rowCopy[groupIndex];
-      rowCopy.splice(groupIndex,1); // remove from display
+      rowCopy.splice(groupIndex,1);
       return { data: rowCopy, group: groupValue };
     });
 
     renderGroups(allRows);
   });
 
+// Render groups with sort
 function renderGroups(rows) {
   tbody.innerHTML = '';
   const groups = {};
@@ -200,6 +211,7 @@ function renderGroups(rows) {
     headerTr.className = 'group-header-row';
     const headerTd = document.createElement('td');
     headerTd.colSpan = headers.length;
+
     const arrow = document.createElement('span');
     arrow.className = 'arrow';
     arrow.textContent = '▼';
@@ -211,18 +223,21 @@ function renderGroups(rows) {
     // Group content
     const contentWrapper = document.createElement('tbody');
     contentWrapper.className = 'group-content-wrapper';
+
     groupRows.forEach(r=>{
       const tr = document.createElement('tr');
       r.forEach((c,idx)=>{
         const td = document.createElement('td');
         td.textContent = c.trim();
         td.setAttribute('data-label', headers[idx]);
+        td.classList.add('sortable'); // make cells clickable for sort
+        td.addEventListener('click', ()=>sortGroup(contentWrapper, idx));
         tr.appendChild(td);
       });
       contentWrapper.appendChild(tr);
     });
-    tbody.appendChild(contentWrapper);
 
+    tbody.appendChild(contentWrapper);
     contentWrapper.style.maxHeight = contentWrapper.scrollHeight + 'px';
 
     // Collapse/expand
@@ -232,6 +247,20 @@ function renderGroups(rows) {
       contentWrapper.style.maxHeight = hidden ? '0' : contentWrapper.scrollHeight + 'px';
     });
   });
+}
+
+// Sort within group
+function sortGroup(tbodyGroup, colIndex) {
+  const rows = Array.from(tbodyGroup.querySelectorAll('tr'));
+  const asc = !tbodyGroup.asc;
+  rows.sort((a,b)=>{
+    const aText = a.children[colIndex].textContent.trim().toLowerCase();
+    const bText = b.children[colIndex].textContent.trim().toLowerCase();
+    if(!isNaN(aText) && !isNaN(bText)) return asc?aText-bText:bText-aText;
+    return asc?aText.localeCompare(bText):bText.localeCompare(aText);
+  });
+  rows.forEach(r=>tbodyGroup.appendChild(r));
+  tbodyGroup.asc = asc;
 }
 
 // Search filter
