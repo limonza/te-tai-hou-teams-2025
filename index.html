@@ -13,6 +13,15 @@ body {
   margin: 0;
   padding: 20px;
   color: #333;
+  display: flex;
+  justify-content: center;
+}
+
+/* --- Page wrapper centered --- */
+#page-wrapper {
+  width: 100%;
+  max-width: 40%;
+  min-width: 320px;
 }
 
 /* --- Header --- */
@@ -94,6 +103,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
+  table-layout: fixed; /* Evenly distributed columns */
 }
 thead th {
   background: #f3f4f6;
@@ -102,24 +112,24 @@ thead th {
   z-index: 2;
   padding: 0.5rem;
   text-align: left;
-  cursor: pointer;
 }
 tbody td {
   border-top: 1px solid #e5e7eb;
   padding: 0.4rem 0.5rem;
+  word-wrap: break-word;
 }
 tbody tr:hover {
   background: #f9fafb;
 }
-th.sort-asc, th.sort-desc {
-  background: #e5e7eb;
-}
 th::after {
-  content: ''; /* Remove arrows */
+  content: ''; /* Remove sort arrows */
 }
 
 /* --- Responsive table --- */
 @media (max-width: 768px) {
+  #page-wrapper {
+    max-width: 100%;
+  }
   table, thead, tbody, th, td, tr {
     display: block;
   }
@@ -145,6 +155,7 @@ th::after {
 </head>
 
 <body>
+<div id="page-wrapper">
 <header>
   <a href="https://www.poriruaheatbasketballclub.org" target="_blank">
     <img src="images/logo.png" alt="Porirua Heat Logo">
@@ -161,6 +172,7 @@ th::after {
 </div>
 
 <div id="table-container"></div>
+</div>
 
 <script>
 const search = document.getElementById('search');
@@ -186,9 +198,14 @@ fetch('teams.csv')
     headers = lines[0].map(h => h.trim());
     indicativeIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
 
+    // Remove rows with no Indicative Selection
     allRows = lines.slice(1)
       .map(r => r.map(c => c.trim()))
       .filter(r => r[indicativeIndex] && r[indicativeIndex] !== '');
+
+    // Remove the Indicative Selection column from headers and rows
+    headers.splice(indicativeIndex, 1);
+    allRows = allRows.map(r => r.filter((_, i) => i !== indicativeIndex));
 
     populateDropdown();
     renderGroups(allRows);
@@ -196,7 +213,7 @@ fetch('teams.csv')
 
 // --- Populate dropdown ---
 function populateDropdown() {
-  const unique = [...new Set(allRows.map(r => r[indicativeIndex]))];
+  const unique = [...new Set(allRows.map(r => r[indicativeIndex - 1]))];
   const ordered = groupOrder.concat(unique.filter(v => !groupOrder.includes(v)));
   ordered.forEach(v => {
     const opt = document.createElement('option');
@@ -209,30 +226,28 @@ function populateDropdown() {
 // --- Render groups ---
 function renderGroups(rows) {
   container.innerHTML = '';
-  const groups = rows.reduce((acc,row)=>{
-    const key = row[indicativeIndex].trim();
-    if(!acc[key]) acc[key] = [];
-    acc[key].push(row);
-    return acc;
-  },{});
+  const groups = {};
+
+  rows.forEach(row => {
+    const key = row[row.length - 1]; // Last col is still the grouping key
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(row);
+  });
 
   const filterVal = selectionFilter.value;
   const allGroupKeys = Object.keys(groups);
   const visibleKeys = filterVal
     ? [filterVal]
-    : [...groupOrder.filter(g=>allGroupKeys.includes(g)), ...allGroupKeys.filter(k=>!groupOrder.includes(k))];
+    : [...groupOrder.filter(g => allGroupKeys.includes(g)), ...allGroupKeys.filter(k => !groupOrder.includes(k))];
 
-  visibleKeys.forEach(groupName=>{
+  visibleKeys.forEach(groupName => {
     const groupRows = groups[groupName];
-    if(!groupRows?.length) return;
+    if (!groupRows?.length) return;
 
     const section = document.createElement('section');
     const header = document.createElement('div');
     header.className = 'group-header';
-    header.textContent = groupName;
-    const arrow = document.createElement('span');
-    arrow.textContent = '▼';
-    header.appendChild(arrow);
+    header.innerHTML = `${groupName} <span>(${groupRows.length}) ▼</span>`;
     section.appendChild(header);
 
     const wrapper = document.createElement('div');
@@ -241,19 +256,21 @@ function renderGroups(rows) {
     const table = document.createElement('table');
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
-    headers.forEach((h,i)=>{
+
+    headers.forEach(h => {
       const th = document.createElement('th');
       th.textContent = h;
-      th.addEventListener('click',()=>sortTable(table,i));
       headerRow.appendChild(th);
     });
+
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
     const tbody = document.createElement('tbody');
-    groupRows.forEach(r=>{
+    groupRows.forEach(r => {
       const tr = document.createElement('tr');
-      r.forEach((c,idx)=>{
+      // remove grouping column (last col)
+      r.slice(0, -1).forEach((c, idx) => {
         const td = document.createElement('td');
         td.textContent = c;
         td.setAttribute('data-label', headers[idx]);
@@ -261,44 +278,29 @@ function renderGroups(rows) {
       });
       tbody.appendChild(tr);
     });
+
     table.appendChild(tbody);
     wrapper.appendChild(table);
     section.appendChild(wrapper);
     container.appendChild(section);
 
-    header.addEventListener('click',()=>{
+    header.addEventListener('click', () => {
       wrapper.classList.toggle('hidden');
-      arrow.textContent = wrapper.classList.contains('hidden') ? '▲' : '▼';
+      const arrow = header.querySelector('span');
+      arrow.textContent = wrapper.classList.contains('hidden')
+        ? `(${groupRows.length}) ▲`
+        : `(${groupRows.length}) ▼`;
     });
   });
 }
 
-// --- Sorting ---
-function sortTable(table,colIndex) {
-  const tbody = table.querySelector('tbody');
-  const rows = Array.from(tbody.querySelectorAll('tr'));
-  const th = table.querySelectorAll('th')[colIndex];
-  const asc = !th.classList.contains('sort-asc');
-
-  rows.sort((a,b)=>{
-    const aText=a.children[colIndex].textContent.trim().toLowerCase();
-    const bText=b.children[colIndex].textContent.trim().toLowerCase();
-    if(!isNaN(aText) && !isNaN(bText)) return asc?aText-bText:bText-aText;
-    return asc?aText.localeCompare(bText):bText.localeCompare(aText);
-  });
-
-  rows.forEach(r=>tbody.appendChild(r));
-  table.querySelectorAll('th').forEach(h=>h.classList.remove('sort-asc','sort-desc'));
-  th.classList.toggle(asc?'sort-asc':'sort-desc');
-}
-
-// --- Filters ---
+// --- Search & Filter ---
 function applyFilters() {
   const q = search.value.toLowerCase();
   const sel = selectionFilter.value;
-  const filtered = allRows.filter(r=>{
-    const matchesSearch = r.some(c=>c.toLowerCase().includes(q));
-    const matchesSel = !sel || r[indicativeIndex]===sel;
+  const filtered = allRows.filter(r => {
+    const matchesSearch = r.some(c => c.toLowerCase().includes(q));
+    const matchesSel = !sel || r[r.length - 1] === sel;
     return matchesSearch && matchesSel;
   });
   renderGroups(filtered);
@@ -308,18 +310,18 @@ search.addEventListener('input', applyFilters);
 selectionFilter.addEventListener('change', applyFilters);
 
 // --- Export visible ---
-exportBtn.addEventListener('click', ()=>{
+exportBtn.addEventListener('click', () => {
   const rows = [];
   rows.push(headers.join(','));
-  container.querySelectorAll('section').forEach(section=>{
+  container.querySelectorAll('section').forEach(section => {
     const wrapper = section.querySelector('.group-content');
-    if(wrapper.classList.contains('hidden')) return;
-    wrapper.querySelectorAll('tbody tr').forEach(tr=>{
-      const cells = Array.from(tr.children).map(td=>td.textContent);
+    if (wrapper.classList.contains('hidden')) return;
+    wrapper.querySelectorAll('tbody tr').forEach(tr => {
+      const cells = Array.from(tr.children).map(td => td.textContent);
       rows.push(cells.join(','));
     });
   });
-  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = 'filtered_data.csv';
@@ -328,4 +330,3 @@ exportBtn.addEventListener('click', ()=>{
 </script>
 </body>
 </html>
-
