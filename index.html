@@ -12,21 +12,22 @@ body {
   margin: 0;
   padding: 20px;
   color: #333;
-  text-align: center; /* center table */
 }
 
 /* --- Page header --- */
 header {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* logo left of heading */
   gap: 12px;
   margin-bottom: 24px;
 }
+
 header img {
   height: 60px;
   border-radius: 50%;
 }
+
 header h1 {
   font-size: 1.8em;
   margin: 0;
@@ -41,13 +42,290 @@ header h1 {
   flex-wrap: wrap;
   margin-bottom: 12px;
 }
+
 .controls input, .controls select {
   padding: 6px 10px;
   border: 1px solid #cbd5e0;
   border-radius: 6px;
   font-size: 0.95em;
 }
+
 .controls input:focus, .controls select:focus {
   outline: none;
   border-color: #2b6cb0;
-  box-shadow: 0 0 4px rgba(43,
+  box-shadow: 0 0 4px rgba(43,108,176,0.3);
+}
+
+/* --- Table layout --- */
+table {
+  width: 50%;
+  max-width: 800px;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  table-layout: auto;
+  margin: 0 auto;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: #2b6cb0;
+  color: #fff;
+  text-align: left;
+  padding: 10px;
+  font-weight: 600;
+  border-bottom: 2px solid #1a365d;
+  z-index: 2;
+  cursor: pointer;
+}
+
+tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* --- Group headers --- */
+.group-header {
+  background-color: #e6fffa;
+  color: #234e52;
+  font-weight: bold;
+  padding: 8px;
+  cursor: pointer;
+  border-top: 2px solid #81e6d9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.group-header:hover {
+  background-color: #b2f5ea;
+}
+
+.group-header span.arrow {
+  margin-left: 10px;
+}
+
+/* --- Collapsible content --- */
+.group-content {
+  transition: all 0.3s ease;
+}
+
+.group-content.hidden {
+  display: none;
+}
+
+/* --- Responsive table --- */
+@media (max-width: 768px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tr {
+    margin-bottom: 12px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #2b6cb0;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="https://www.poriruaheatbasketballclub.org" target="_blank">
+    <img src="images/logo.png" alt="Te Tai Hou Logo">
+  </a>
+  <h1>Te Tai Hou Teams – 2025</h1>
+</header>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search players...">
+  <select id="selectionFilter">
+    <option value="">All Indicative Selection</option>
+  </select>
+  <button id="export">Export Filtered Data</button>
+</div>
+
+<div id="table-container"></div>
+
+<script>
+// --- Variables ---
+const search = document.getElementById('search');
+const selectionFilter = document.getElementById('selectionFilter');
+const container = document.getElementById('table-container');
+const exportBtn = document.getElementById('export');
+
+let headers = [];
+let allRows = [];
+let indicativeIndex = -1;
+
+// Custom group order
+const groupOrder = [
+  "10U Dev","10U Elite","12U Dev","12U Elite",
+  "14U Dev Blue","14U Elite Black","14U Elite Gold","14U Dev Red",
+  "16U Dev","16U Elite","20U","Mens","Womens"
+];
+
+// --- Load CSV ---
+fetch('data.csv')
+  .then(res => res.text())
+  .then(text => {
+    const lines = text.trim().split('\n').map(l => l.split(','));
+    headers = lines[0].map(h => h.trim());
+    indicativeIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
+    allRows = lines.slice(1).filter(r => r[indicativeIndex]?.trim() !== '');
+    populateDropdown();
+    renderGroups(allRows);
+  });
+
+// --- Populate dropdown ---
+function populateDropdown() {
+  const unique = [...new Set(allRows.map(r => r[indicativeIndex].trim()))];
+  const ordered = groupOrder.concat(unique.filter(v => !groupOrder.includes(v)));
+  ordered.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    selectionFilter.appendChild(opt);
+  });
+}
+
+// --- Render groups ---
+function renderGroups(rows) {
+  container.innerHTML = '';
+  const groups = rows.reduce((acc,row) => {
+    const key = row[indicativeIndex].trim();
+    if(!acc[key]) acc[key] = [];
+    acc[key].push(row);
+    return acc;
+  }, {});
+
+  const filterVal = selectionFilter.value;
+  const allGroupKeys = Object.keys(groups);
+  let visibleKeys = filterVal 
+    ? [filterVal] 
+    : [...groupOrder.filter(g=>allGroupKeys.includes(g)), ...allGroupKeys.filter(k=>!groupOrder.includes(k))];
+
+  visibleKeys.forEach(groupName => {
+    const groupRows = groups[groupName];
+    if(!groupRows || groupRows.length === 0) return;
+
+    const section = document.createElement('section');
+
+    const header = document.createElement('div');
+    header.className = 'group-header';
+    header.textContent = groupName;
+    const arrow = document.createElement('span');
+    arrow.className = 'arrow';
+    arrow.textContent = '▼';
+    header.appendChild(arrow);
+    section.appendChild(header);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'group-content';
+
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    headers.forEach((h,i)=>{
+      const th = document.createElement('th');
+      th.textContent = h;
+      th.addEventListener('click',()=>sortTable(table,i));
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    groupRows.forEach(r=>{
+      const tr = document.createElement('tr');
+      r.forEach((c,idx)=>{
+        const td = document.createElement('td');
+        td.textContent = c.trim();
+        td.setAttribute('data-label', headers[idx]);
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrapper.appendChild(table);
+    section.appendChild(wrapper);
+    container.appendChild(section);
+
+    // --- Collapse/expand ---
+    header.addEventListener('click', ()=>{
+      wrapper.classList.toggle('hidden');
+      arrow.textContent = wrapper.classList.contains('hidden') ? '▲' : '▼';
+    });
+  });
+}
+
+// --- Sorting ---
+function sortTable(table,colIndex) {
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const th = table.querySelectorAll('th')[colIndex];
+  const asc = !th.classList.contains('sort-asc');
+
+  rows.sort((a,b)=>{
+    const aText=a.children[colIndex].textContent.trim().toLowerCase();
+    const bText=b.children[colIndex].textContent.trim().toLowerCase();
+    if(!isNaN(aText) && !isNaN(bText)) return asc?aText-bText:bText-aText;
+    return asc?aText.localeCompare(bText):bText.localeCompare(aText);
+  });
+
+  rows.forEach(r=>tbody.appendChild(r));
+  table.querySelectorAll('th').forEach(h=>h.classList.remove('sort-asc','sort-desc'));
+  th.classList.toggle(asc?'sort-asc':'sort-desc');
+}
+
+// --- Filters/search ---
+function applyFilters() {
+  const q = search.value.toLowerCase();
+  const sel = selectionFilter.value;
+  const filtered = allRows.filter(r=>{
+    const matchesSearch = r.some(c=>c.toLowerCase().includes(q));
+    const matchesSel = !sel || r[indicativeIndex]===sel;
+    return matchesSearch && matchesSel;
+  });
+  renderGroups(filtered);
+}
+
+search.addEventListener('input', applyFilters);
+selectionFilter.addEventListener('change', applyFilters);
+
+// --- Export filtered data ---
+exportBtn.addEventListener('click', ()=>{
+  const rows = [];
+  rows.push(headers.join(','));
+  container.querySelectorAll('tbody tr').forEach(tr=>{
+    const cells = Array.from(tr.children).map(td=>td.textContent);
+    rows.push(cells.join(','));
+  });
+  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'filtered_data.csv';
+  link.click();
+});
+</script>
+
+</body>
+</html>
