@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Te Tai Hou Teams – 2025</title>
 <style>
-/* --- General page setup --- */
 body {
   font-family: "Segoe UI", Roboto, sans-serif;
   background-color: #f9fafb;
@@ -14,7 +13,7 @@ body {
   color: #333;
 }
 
-/* --- Page header --- */
+/* Header */
 header {
   display: flex;
   align-items: center;
@@ -22,19 +21,37 @@ header {
   gap: 12px;
   margin-bottom: 24px;
 }
-
 header img {
   height: 50px;
   border-radius: 50%;
 }
-
 header h1 {
   font-size: 1.8em;
   margin: 0;
   color: #1a365d;
 }
 
-/* --- Table layout --- */
+/* Controls */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+select {
+  padding: 6px 10px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+select:focus {
+  outline: none;
+  border-color: #2b6cb0;
+  box-shadow: 0 0 4px rgba(43,108,176,0.3);
+}
+
+/* Table */
 table {
   width: 50%;
   max-width: 800px;
@@ -44,27 +61,21 @@ table {
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   margin: 0 auto;
-  table-layout: auto;
 }
-
 thead th {
-  position: sticky;
-  top: 0;
   background-color: #2b6cb0;
   color: #fff;
   text-align: left;
   padding: 10px;
   font-weight: 600;
   border-bottom: 2px solid #1a365d;
-  z-index: 2;
 }
-
 tbody td {
   padding: 10px;
   border-bottom: 1px solid #e2e8f0;
 }
 
-/* --- Group headers --- */
+/* Group headers */
 .group-header {
   background-color: #e6fffa;
   color: #234e52;
@@ -74,63 +85,30 @@ tbody td {
   border-top: 2px solid #81e6d9;
   text-align: center;
 }
-
 .group-header:hover {
   background-color: #b2f5ea;
 }
-
-/* --- Collapsible content --- */
-.group-content {
-  transition: all 0.3s ease;
-}
-
 .group-content.hidden {
   display: none;
 }
 
-/* --- Controls --- */
-.controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-select, input[type="text"] {
-  padding: 6px 10px;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  font-size: 0.9em;
-}
-
-select:focus, input:focus {
-  outline: none;
-  border-color: #2b6cb0;
-  box-shadow: 0 0 4px rgba(43,108,176,0.3);
-}
-
-/* --- Responsive table --- */
+/* Responsive */
 @media (max-width: 768px) {
   table, thead, tbody, th, td, tr {
     display: block;
   }
-
   thead {
     display: none;
   }
-
   tr {
     margin-bottom: 12px;
     border-bottom: 1px solid #ddd;
   }
-
   td {
     display: flex;
     justify-content: space-between;
     padding: 8px;
   }
-
   td::before {
     content: attr(data-label);
     font-weight: 600;
@@ -163,15 +141,29 @@ const groupOrder = [
   "16U Dev", "16U Elite", "20U", "Mens", "Womens"
 ];
 
+// Load data.csv or fallback to demo data
 async function loadData() {
-  const response = await fetch('teams.csv');
-  const text = await response.text();
-  const rows = text.trim().split('\n').map(r => r.split(','));
+  let text;
+  try {
+    const response = await fetch('data.csv');
+    if (!response.ok) throw new Error('Fetch failed');
+    text = await response.text();
+  } catch {
+    console.warn("⚠️ Using fallback demo data because data.csv couldn't be loaded.");
+    text = `First Name,Last Name,Indicative Selection
+John,Smith,10U Dev
+Mary,Jones,10U Dev
+Bob,Brown,12U Elite
+Kate,Wilson,14U Elite Black
+Tim,Ngatai,
+Sarah,Taylor,Womens`;
+  }
 
-  const headers = rows[0];
+  const rows = text.trim().split('\n').map(r => r.split(','));
+  const headers = rows[0].map(h => h.trim());
   const data = rows.slice(1)
     .map(r => Object.fromEntries(r.map((v, i) => [headers[i], v.trim()])))
-    .filter(row => row["Indicative Selection"]); // Exclude blanks
+    .filter(row => row["Indicative Selection"]);
 
   const grouped = groupData(data, "Indicative Selection");
   renderFilterOptions(grouped);
@@ -230,7 +222,7 @@ function renderTable(groups) {
     const thead = document.createElement("thead");
     const tbody = document.createElement("tbody");
 
-    // Build table headings
+    // Build headings
     const headerRow = document.createElement("tr");
     Object.keys(groups[group][0]).forEach(key => {
       if (key !== "Indicative Selection") {
@@ -241,7 +233,7 @@ function renderTable(groups) {
     });
     thead.appendChild(headerRow);
 
-    // Build table rows
+    // Build rows
     groups[group].forEach(row => {
       const tr = document.createElement("tr");
       Object.keys(row).forEach(key => {
@@ -268,4 +260,3 @@ loadData();
 </script>
 </body>
 </html>
-
