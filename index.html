@@ -57,17 +57,17 @@ header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  table-layout: fixed;
+  table-layout: fixed; /* force equal widths */
 }
 
 #main-table tbody td {
   padding: 10px;
   border-bottom: 1px solid #e2e8f0;
-  width: 50%; /* Two columns evenly split */
+  width: 50%; /* evenly distribute 2 columns */
   word-wrap: break-word;
 }
 
-/* --- Group headers --- */
+/* Group headers */
 .group-header-row {
   display: table-row;
   background-color: #e6fffa;
@@ -75,12 +75,15 @@ header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
   font-weight: bold;
   cursor: pointer;
   border-top: 2px solid #81e6d9;
-  z-index: 2;
   position: sticky;
   top: 0;
+  z-index: 2;
 }
 
 .group-header-row td {
+  display: block;       /* Full width of table */
+  width: 100%;
+  box-sizing: border-box;
   padding: 8px;
   position: relative;
 }
@@ -91,41 +94,34 @@ header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
   margin-left: 10px;
   transition: transform 0.3s ease;
 }
+.group-header-row td .arrow.collapsed { transform: rotate(-90deg); }
 
-.group-header-row td .arrow.collapsed {
-  transform: rotate(-90deg);
-}
-
-/* --- Collapsible group content animation --- */
+/* Collapsible group content */
 .group-content-wrapper {
   display: table-row-group;
   overflow: hidden;
   transition: max-height 0.3s ease;
 }
+.group-content-wrapper.hidden { max-height: 0 !important; }
 
-.group-content-wrapper.hidden {
-  max-height: 0 !important;
-}
-
-/* Sort indicator */
-.sortable {
+/* Sort icon */
+.sort-icon {
   cursor: pointer;
-  text-decoration: underline;
+  margin-left: 5px;
   color: #2b6cb0;
+}
+.sort-icon:hover {
+  color: #1a365d;
+  font-weight: bold;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   #table-container { width: 100%; }
-  #main-table, tbody, td, tr {
-    display: block;
-  }
-
+  #main-table, tbody, td, tr { display: block; }
   tr { margin-bottom: 12px; border-bottom: 1px solid #ddd; }
-
   td { display: flex; justify-content: space-between; padding: 8px; }
   td::before { content: attr(data-label); font-weight: 600; color: #2b6cb0; }
-
   .group-header-row { display: block; position: static; }
   .group-content-wrapper { display: block; max-height: none; }
   .group-header-row td .arrow { float: right; }
@@ -173,20 +169,19 @@ fetch('teams.csv')
     headers = lines[0].map(h => h.trim());
 
     const groupIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
-
     if(groupIndex >= 0) headers.splice(groupIndex,1);
 
     allRows = lines.slice(1).map(r => {
       const rowCopy = [...r];
       const groupValue = rowCopy[groupIndex];
-      rowCopy.splice(groupIndex,1);
+      rowCopy.splice(groupIndex,1); // remove from visible data
       return { data: rowCopy, group: groupValue };
     });
 
     renderGroups(allRows);
   });
 
-// Render groups with sort
+// Render groups
 function renderGroups(rows) {
   tbody.innerHTML = '';
   const groups = {};
@@ -211,7 +206,6 @@ function renderGroups(rows) {
     headerTr.className = 'group-header-row';
     const headerTd = document.createElement('td');
     headerTd.colSpan = headers.length;
-
     const arrow = document.createElement('span');
     arrow.className = 'arrow';
     arrow.textContent = '▼';
@@ -226,12 +220,20 @@ function renderGroups(rows) {
 
     groupRows.forEach(r=>{
       const tr = document.createElement('tr');
-      r.forEach((c,idx)=>{
+      r.forEach((c, idx) => {
         const td = document.createElement('td');
         td.textContent = c.trim();
         td.setAttribute('data-label', headers[idx]);
-        td.classList.add('sortable'); // make cells clickable for sort
-        td.addEventListener('click', ()=>sortGroup(contentWrapper, idx));
+
+        // Sort icon
+        const sortIcon = document.createElement('span');
+        sortIcon.textContent = ' ↕';
+        sortIcon.className = 'sort-icon';
+        sortIcon.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          sortGroup(contentWrapper, idx);
+        });
+        td.appendChild(sortIcon);
         tr.appendChild(td);
       });
       contentWrapper.appendChild(tr);
@@ -254,8 +256,8 @@ function sortGroup(tbodyGroup, colIndex) {
   const rows = Array.from(tbodyGroup.querySelectorAll('tr'));
   const asc = !tbodyGroup.asc;
   rows.sort((a,b)=>{
-    const aText = a.children[colIndex].textContent.trim().toLowerCase();
-    const bText = b.children[colIndex].textContent.trim().toLowerCase();
+    const aText = a.children[colIndex].firstChild.textContent.trim().toLowerCase();
+    const bText = b.children[colIndex].firstChild.textContent.trim().toLowerCase();
     if(!isNaN(aText) && !isNaN(bText)) return asc?aText-bText:bText-aText;
     return asc?aText.localeCompare(bText):bText.localeCompare(aText);
   });
@@ -263,7 +265,7 @@ function sortGroup(tbodyGroup, colIndex) {
   tbodyGroup.asc = asc;
 }
 
-// Search filter
+// Search
 search.addEventListener('input', ()=>{
   const q = search.value.toLowerCase();
   const filtered = allRows.filter(r=> r.data.some(c=> c.toLowerCase().includes(q)) );
@@ -276,7 +278,7 @@ exportBtn.addEventListener('click', ()=>{
   rows.push(headers.join(','));
   tbody.querySelectorAll('tr').forEach(tr=>{
     if(tr.classList.contains('group-header-row')) return;
-    const cells = Array.from(tr.children).map(td=>td.textContent);
+    const cells = Array.from(tr.children).map(td=>td.firstChild.textContent);
     rows.push(cells.join(','));
   });
   const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
