@@ -1,136 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Te Tai Hou Teams – 2025</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Te Tai Hou Teams – 2025</title>
+<style>
+body {
+  font-family: "Segoe UI", Roboto, sans-serif;
+  margin: 20px;
+  background: #f9fafb;
+  color: #333;
+}
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+header img { height: 60px; border-radius: 50%; }
+header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
+
+.controls, .group-controls { margin-bottom: 12px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.controls input, .controls select { padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; }
+.btn { padding: 6px 12px; border-radius: 6px; border: none; background: #2563eb; color: white; cursor: pointer; }
+.btn:hover { background: #1e40af; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+thead th { position: sticky; top: 0; background: #2b6cb0; color: white; padding: 10px; border-bottom: 2px solid #1a365d; }
+tbody td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+tbody tr:nth-child(even) { background: #f0f7ff; }
+tbody tr:hover td { background: #dbeeff; }
+
+.group-header {
+  background: #e6fffa;
+  color: #234e52;
+  font-weight: bold;
+  padding: 8px;
+  cursor: pointer;
+  margin-top: 4px;
+  border-radius: 4px;
+}
+.group-content.hidden { display: none; }
+</style>
 </head>
 <body>
 
-  <header>
-    <img src="logo.png" alt="Te Tai Hou Logo">
-    <h1>Te Tai Hou Teams – 2025</h1>
-  </header>
+<header>
+  <img src="logo.png" alt="Te Tai Hou Logo">
+  <h1>Te Tai Hou Teams – 2025</h1>
+</header>
 
-  <div class="controls">
-    <label for="filter">Filter by Team:</label>
-    <select id="filter">
-      <option value="">All Teams</option>
-    </select>
-  </div>
+<div class="controls">
+  <label for="groupFilter">Filter by Group:</label>
+  <select id="groupFilter">
+    <option value="">All Groups</option>
+  </select>
+  <input type="text" id="searchBox" placeholder="Search names...">
+</div>
 
-  <div id="table-container"></div>
+<div class="group-controls">
+  <button id="expandAll" class="btn">Expand All</button>
+  <button id="collapseAll" class="btn">Collapse All</button>
+</div>
 
-  <script>
-    async function loadCSV() {
-      const response = await fetch('teams.csv');
-      const text = await response.text();
-      const rows = text.trim().split('\n').map(r => r.split(','));
+<div id="table-container"></div>
 
-      const headers = rows.shift();
-      const data = rows.map(r => {
-        const obj = {};
-        headers.forEach((h, i) => (obj[h.trim()] = r[i]?.trim()));
-        return obj;
-      }).filter(r => r["Indicative Selection"]); // exclude blanks
+<script>
+async function loadCSV() {
+  const response = await fetch('teams.csv');
+  const text = await response.text();
+  const rows = text.trim().split('\n').map(r => r.split(','));
 
-      const groups = {};
-      data.forEach(row => {
-        const group = row["Indicative Selection"];
-        if (!groups[group]) groups[group] = [];
-        groups[group].push(row);
+  const headers = rows.shift();
+  const data = rows.map(r => {
+    const obj = {};
+    headers.forEach((h,i) => obj[h.trim()] = r[i]?.trim());
+    return obj;
+  }).filter(r => r["Indicative Selection"]);
+
+  // Group rows by Indicative Selection
+  const groups = {};
+  data.forEach(r => {
+    const g = r["Indicative Selection"];
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(r);
+  });
+
+  const customOrder = ["Premier","Senior","Intermediate","Junior"];
+  const sortedGroups = Object.keys(groups).sort((a,b)=>{
+    const ai = customOrder.indexOf(a), bi = customOrder.indexOf(b);
+    if(ai===-1 && bi===-1) return a.localeCompare(b);
+    if(ai===-1) return 1;
+    if(bi===-1) return -1;
+    return ai-bi;
+  });
+
+  const container = document.getElementById('table-container');
+  container.innerHTML = "";
+
+  sortedGroups.forEach(group => {
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'group';
+
+    const header = document.createElement('div');
+    header.className = 'group-header';
+    header.textContent = `${group} (${groups[group].length})`;
+
+    const content = document.createElement('div');
+    content.className = 'group-content';
+
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    thead.innerHTML = `<tr>
+      <th>First Name</th>
+      <th>Last Name</th>
+    </tr>`;
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    groups[group].sort((a,b)=>a["First Name"].localeCompare(b["First Name"]))
+      .forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r["First Name"]}</td><td>${r["Last Name"]}</td>`;
+        tbody.appendChild(tr);
       });
+    table.appendChild(tbody);
+    content.appendChild(table);
 
-      // Custom sort order for groups
-      const customOrder = ["Premier", "Senior", "Intermediate", "Junior"];
-      const sortedGroups = Object.keys(groups).sort((a, b) => {
-        const ai = customOrder.indexOf(a);
-        const bi = customOrder.indexOf(b);
-        if (ai === -1 && bi === -1) return a.localeCompare(b);
-        if (ai === -1) return 1;
-        if (bi === -1) return -1;
-        return ai - bi;
+    header.onclick = ()=>content.classList.toggle('hidden');
+
+    groupDiv.appendChild(header);
+    groupDiv.appendChild(content);
+    container.appendChild(groupDiv);
+  });
+
+  // Populate group dropdown
+  const groupFilter = document.getElementById('groupFilter');
+  Object.keys(groups).sort().forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g;
+    opt.textContent = g;
+    groupFilter.appendChild(opt);
+  });
+
+  // Filter by group + search
+  function applyFilter() {
+    const selectedGroup = groupFilter.value.toLowerCase();
+    const searchQuery = document.getElementById('searchBox').value.toLowerCase();
+    document.querySelectorAll('.group').forEach(groupDiv => {
+      const header = groupDiv.querySelector('.group-header');
+      const groupName = header.textContent.toLowerCase();
+      const rows = groupDiv.querySelectorAll('tbody tr');
+
+      let anyVisible = false;
+      rows.forEach(row => {
+        const first = row.cells[0].textContent.toLowerCase();
+        const last = row.cells[1].textContent.toLowerCase();
+        const matchSearch = first.includes(searchQuery) || last.includes(searchQuery);
+        const matchGroup = !selectedGroup || groupName.includes(selectedGroup);
+        const show = matchSearch && matchGroup;
+        row.style.display = show ? "" : "none";
+        if(show) anyVisible = true;
       });
+      groupDiv.style.display = anyVisible ? "" : "none";
+    });
+  }
 
-      const container = document.getElementById('table-container');
-      container.innerHTML = "";
+  groupFilter.addEventListener('change', applyFilter);
+  document.getElementById('searchBox').addEventListener('input', applyFilter);
 
-      sortedGroups.forEach(group => {
-        const groupDiv = document.createElement('div');
-        groupDiv.classList.add('group');
+  // Expand/Collapse All buttons
+  document.getElementById('expandAll').onclick = ()=>{
+    document.querySelectorAll('.group-content').forEach(c=>c.classList.remove('hidden'));
+  };
+  document.getElementById('collapseAll').onclick = ()=>{
+    document.querySelectorAll('.group-content').forEach(c=>c.classList.add('hidden'));
+  };
+}
 
-        const header = document.createElement('div');
-        header.classList.add('group-header');
-        header.textContent = group;
-        header.onclick = () => content.classList.toggle('hidden');
+loadCSV();
+</script>
 
-        const content = document.createElement('div');
-        content.classList.add('group-content');
-
-        const table = document.createElement('table');
-        const thead = document.createElement('thead');
-        thead.innerHTML = `
-          <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
-            <th>Contact Number</th>
-            <th>Eligible Team</th>
-          </tr>`;
-        table.appendChild(thead);
-
-        const tbody = document.createElement('tbody');
-        groups[group]
-          .sort((a, b) => a["First Name"].localeCompare(b["First Name"]))
-          .forEach(r => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${r["First Name"]}</td>
-              <td>${r["Last Name"]}</td>
-              <td>${r["Email"]}</td>
-              <td>${r["Contact Number"]}</td>
-              <td>${r["Eligible Team"]}</td>`;
-            tbody.appendChild(tr);
-          });
-        table.appendChild(tbody);
-        content.appendChild(table);
-
-        groupDiv.appendChild(header);
-        groupDiv.appendChild(content);
-        container.appendChild(groupDiv);
-      });
-
-      // Populate dropdown filter
-      const filter = document.getElementById('filter');
-      const teams = [...new Set(data.map(r => r["Eligible Team"]).filter(Boolean))].sort();
-      teams.forEach(team => {
-        const opt = document.createElement('option');
-        opt.value = team;
-        opt.textContent = team;
-        filter.appendChild(opt);
-      });
-
-      // Filter function
-      filter.addEventListener('change', e => {
-        const selected = e.target.value;
-        document.querySelectorAll('.group').forEach(groupDiv => {
-          const rows = groupDiv.querySelectorAll('tbody tr');
-          let visible = false;
-          rows.forEach(row => {
-            const team = row.cells[4].textContent.trim();
-            const match = !selected || team === selected;
-            row.style.display = match ? "" : "none";
-            if (match) visible = true;
-          });
-          groupDiv.style.display = visible ? "" : "none";
-        });
-      });
-    }
-
-    loadCSV();
-  </script>
 </body>
 </html>
-
-
