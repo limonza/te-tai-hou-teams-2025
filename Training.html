@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Te Tai Hou Teams – 2025</title>
 
+<!-- jsPDF & html2canvas for PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
 /* --- General page setup --- */
 body {
@@ -16,11 +20,14 @@ body {
   display: flex;
   justify-content: center;
 }
+
 #page-wrapper {
   width: 100%;
   max-width: 40%;
   min-width: 320px;
 }
+
+/* --- Header --- */
 header {
   display: flex;
   align-items: center;
@@ -82,7 +89,12 @@ section {
 .group-content.hidden { display: none; }
 
 /* --- Table --- */
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  table-layout: fixed;
+}
 thead th {
   background: #f3f4f6;
   position: sticky;
@@ -106,7 +118,11 @@ th::after { content: ''; }
   thead { display: none; }
   tr { margin-bottom: 12px; border-bottom: 1px solid #ddd; }
   td { display: flex; justify-content: space-between; padding: 8px; }
-  td::before { content: attr(data-label); font-weight: 600; color: #2b6cb0; }
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #2b6cb0;
+  }
 }
 </style>
 </head>
@@ -122,9 +138,12 @@ th::after { content: ''; }
 
 <div class="controls">
   <input id="search" type="text" placeholder="Search...">
-  <select id="selectionFilter"><option value="">All Teams</option></select>
+  <select id="selectionFilter">
+    <option value="">All Teams</option>
+  </select>
   <button id="export">Export CSV</button>
   <button id="toggleGroups">Collapse All</button>
+  <button id="pdfBtn">Generate PDF</button>
 </div>
 
 <div id="table-container"></div>
@@ -136,14 +155,14 @@ const selectionFilter = document.getElementById('selectionFilter');
 const container = document.getElementById('table-container');
 const exportBtn = document.getElementById('export');
 const toggleGroupsBtn = document.getElementById('toggleGroups');
+const pdfBtn = document.getElementById('pdfBtn');
 
 let headers = [];
 let allRows = [];
-const nameIndex = 0;  // First column: Name
-const groupIndex = 1; // Second column: Group
-const leagueIndex = 2; // Third column: Leagues
-
-const customGroupOrder = ["Group1","Group2","Group3","Group4"];
+const nameIndex = 0;
+const groupIndex = 1;
+const leagueIndex = 2;
+const customGroupOrder = ["Group1", "Group2", "Group3", "Group4"];
 
 // --- Load CSV ---
 fetch('Sunday.csv')
@@ -171,7 +190,6 @@ function populateDropdown() {
 // --- Render groups ---
 function renderGroups(rows) {
   container.innerHTML = '';
-
   const groups = rows.reduce((acc, row) => {
     const key = row[groupIndex];
     if (!acc[key]) acc[key] = [];
@@ -190,7 +208,7 @@ function renderGroups(rows) {
     let groupRows = groups[groupName];
     if (!groupRows?.length) return;
 
-    // --- SORT by Name within group ---
+    // --- Sort by Name ---
     groupRows = groupRows.sort((a,b) => a[nameIndex].localeCompare(b[nameIndex]));
 
     const section = document.createElement('section');
@@ -205,7 +223,7 @@ function renderGroups(rows) {
     const table = document.createElement('table');
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
-    headers.forEach((h,i) => {
+    headers.forEach(h => {
       const th = document.createElement('th');
       th.textContent = h;
       headerRow.appendChild(th);
@@ -224,13 +242,13 @@ function renderGroups(rows) {
       });
       tbody.appendChild(tr);
     });
-
     table.appendChild(tbody);
+
     wrapper.appendChild(table);
     section.appendChild(wrapper);
     container.appendChild(section);
 
-    // Toggle individual group
+    // --- Toggle individual group ---
     header.addEventListener('click', () => {
       wrapper.classList.toggle('hidden');
       const arrow = header.querySelector('span:last-child');
@@ -257,8 +275,7 @@ selectionFilter.addEventListener('change', applyFilters);
 
 // --- Export visible ---
 exportBtn.addEventListener('click', () => {
-  const rows = [];
-  rows.push(headers.join(','));
+  const rows = [headers.join(',')];
   container.querySelectorAll('section').forEach(section => {
     const wrapper = section.querySelector('.group-content');
     if (wrapper.classList.contains('hidden')) return;
@@ -267,33 +284,4 @@ exportBtn.addEventListener('click', () => {
       rows.push(cells.join(','));
     });
   });
-  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'filtered_data.csv';
-  link.click();
-});
-
-// --- Expand / Collapse All ---
-toggleGroupsBtn.addEventListener('click', () => {
-  const allGroups = container.querySelectorAll('.group-content');
-  const anyOpen = Array.from(allGroups).some(g => !g.classList.contains('hidden'));
-
-  allGroups.forEach(groupContent => {
-    const section = groupContent.parentElement;
-    const header = section.querySelector('.group-header span:last-child');
-    const count = groupContent.querySelectorAll('tbody tr').length;
-    if (anyOpen) {
-      groupContent.classList.add('hidden');
-      header.textContent = `(${count}) ▲`;
-    } else {
-      groupContent.classList.remove('hidden');
-      header.textContent = `(${count}) ▼`;
-    }
-  });
-
-  toggleGroupsBtn.textContent = anyOpen ? 'Expand All' : 'Collapse All';
-});
-</script>
-</body>
-</html>
+ 
