@@ -163,7 +163,7 @@
       "20U", "Mens", "Womens"
     ];
 
-    fetch('data/data.csv')
+    fetch('data.csv')
       .then(res => res.text())
       .then(text => {
         const lines = text.trim().split('\n').map(l => l.split(','));
