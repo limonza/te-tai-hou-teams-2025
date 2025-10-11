@@ -184,7 +184,7 @@ const groupOrder = [
 ];
 
 // --- Load CSV ---
-fetch('data.csv')
+fetch('teams.csv')
   .then(res => res.text())
   .then(text => {
     const lines = text.trim().split('\n').map(l => l.split(','));
@@ -329,3 +329,4 @@ exportBtn.addEventListener('click', ()=>{
 
 </body>
 </html>
+
