@@ -169,6 +169,7 @@ th::after {
     <option value="">All Teams</option>
   </select>
   <button id="export">Export CSV</button>
+  <button id="toggleGroups">Collapse All</button>
 </div>
 
 <div id="table-container"></div>
@@ -324,8 +325,34 @@ exportBtn.addEventListener('click', () => {
   link.href = URL.createObjectURL(blob);
   link.download = 'filtered_data.csv';
   link.click();
+
+  const toggleGroupsBtn = document.getElementById('toggleGroups');
+
+toggleGroupsBtn.addEventListener('click', () => {
+  const allGroups = container.querySelectorAll('.group-content');
+  const anyOpen = Array.from(allGroups).some(g => !g.classList.contains('hidden'));
+
+  allGroups.forEach((groupContent, idx) => {
+    const section = groupContent.parentElement;
+    const header = section.querySelector('.group-header span:last-child');
+    if (anyOpen) {
+      // Collapse all
+      groupContent.classList.add('hidden');
+      const count = groupContent.querySelectorAll('tbody tr').length;
+      header.textContent = `(${count}) ▲`;
+    } else {
+      // Expand all
+      groupContent.classList.remove('hidden');
+      const count = groupContent.querySelectorAll('tbody tr').length;
+      header.textContent = `(${count}) ▼`;
+    }
+  });
+
+  toggleGroupsBtn.textContent = anyOpen ? 'Expand All' : 'Collapse All';
+  
 });
 </script>
 </body>
 </html>
+
 
