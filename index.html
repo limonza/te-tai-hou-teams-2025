@@ -56,7 +56,7 @@
   let sortAsc = true;
 
   // Load CSV
-  const res = await fetch('data/data.csv');
+  const res = await fetch('data.csv');
   const text = await res.text();
   const lines = text.trim().split('\n');
   headers = lines[0].split(',').map(h => h.trim());
@@ -177,3 +177,4 @@
 
 </body>
 </html>
+
