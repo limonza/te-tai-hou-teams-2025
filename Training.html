@@ -17,6 +17,7 @@ body {
   justify-content: center;
 }
 
+/* --- Page wrapper centered --- */
 #page-wrapper {
   width: 100%;
   max-width: 40%;
@@ -126,12 +127,29 @@ th::after {
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
-  #page-wrapper { max-width: 100%; }
-  table, thead, tbody, th, td, tr { display: block; }
-  thead { display: none; }
-  tr { margin-bottom: 12px; border-bottom: 1px solid #ddd; }
-  td { display: flex; justify-content: space-between; padding: 8px; }
-  td::before { content: attr(data-label); font-weight: 600; color: #2b6cb0; }
+  #page-wrapper {
+    max-width: 100%;
+  }
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  thead {
+    display: none;
+  }
+  tr {
+    margin-bottom: 12px;
+    border-bottom: 1px solid #ddd;
+  }
+  td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+  }
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #2b6cb0;
+  }
 }
 </style>
 </head>
@@ -148,7 +166,7 @@ th::after {
 <div class="controls">
   <input id="search" type="text" placeholder="Search...">
   <select id="selectionFilter">
-    <option value="">All Groups</option>
+    <option value="">All Teams</option>
   </select>
   <button id="export">Export CSV</button>
   <button id="toggleGroups">Collapse All</button>
@@ -166,31 +184,31 @@ const toggleGroupsBtn = document.getElementById('toggleGroups');
 
 let headers = [];
 let allRows = [];
-const groupIndex = 1; // Group column (second column)
+let groupIndex = 1; // Second column is the Group
+let nameIndex = 0;  // First column is Name
+let leagueIndex = 2; // Third column is Leagues
+
+const customGroupOrder = ["Group1", "Group2", "Group3", "Group4"];
 
 // --- Load CSV ---
-fetch('Sunday.csv')
+fetch('teams.csv')
   .then(res => res.text())
   .then(text => {
     const lines = text.trim().split('\n').map(l => l.split(','));
     headers = lines[0].map(h => h.trim());
-
-    // Keep only rows with a Group
-    allRows = lines.slice(1)
-      .map(r => r.map(c => c.trim()))
-      .filter(r => r[groupIndex] && r[groupIndex] !== '');
-
+    allRows = lines.slice(1).map(r => r.map(c => c.trim()));
     populateDropdown();
     renderGroups(allRows);
   });
 
 // --- Populate dropdown ---
 function populateDropdown() {
-  const uniqueGroups = [...new Set(allRows.map(r => r[groupIndex]))];
-  uniqueGroups.forEach(g => {
+  const unique = [...new Set(allRows.map(r => r[groupIndex]))];
+  const ordered = customGroupOrder.concat(unique.filter(v => !customGroupOrder.includes(v)));
+  ordered.forEach(v => {
     const opt = document.createElement('option');
-    opt.value = g;
-    opt.textContent = g;
+    opt.value = v;
+    opt.textContent = v;
     selectionFilter.appendChild(opt);
   });
 }
@@ -198,6 +216,7 @@ function populateDropdown() {
 // --- Render groups ---
 function renderGroups(rows) {
   container.innerHTML = '';
+
   const groups = rows.reduce((acc, row) => {
     const key = row[groupIndex];
     if (!acc[key]) acc[key] = [];
@@ -206,7 +225,11 @@ function renderGroups(rows) {
   }, {});
 
   const filterVal = selectionFilter.value;
-  const visibleKeys = filterVal ? [filterVal] : Object.keys(groups);
+  const allGroupKeys = Object.keys(groups);
+  const remainingGroups = allGroupKeys.filter(g => !customGroupOrder.includes(g)).sort();
+  const visibleKeys = filterVal
+    ? [filterVal]
+    : [...customGroupOrder.filter(g => allGroupKeys.includes(g)), ...remainingGroups];
 
   visibleKeys.forEach(groupName => {
     const groupRows = groups[groupName];
@@ -244,13 +267,13 @@ function renderGroups(rows) {
       });
       tbody.appendChild(tr);
     });
-    table.appendChild(tbody);
 
+    table.appendChild(tbody);
     wrapper.appendChild(table);
     section.appendChild(wrapper);
     container.appendChild(section);
 
-    // Individual toggle
+    // Toggle individual group
     header.addEventListener('click', () => {
       wrapper.classList.toggle('hidden');
       const arrow = header.querySelector('span:last-child');
