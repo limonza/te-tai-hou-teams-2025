@@ -1,69 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Te Tai Hou Teams – 2025</title>
+
 <style>
-  /* Sticky group headers */
-  section {
-    margin-bottom: 1rem;
-    border-radius: 0.75rem;
-    background: #fff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    overflow: hidden;
-  }
+/* --- General page setup --- */
+body {
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background-color: #f9fafb;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+}
 
-  .group-header {
-    font-weight: 600;
-    font-size: 1.1rem;
-    padding: 0.6rem 1rem;
-    background: linear-gradient(to right, #ef4444, #f97316);
-    color: #fff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-  }
+/* --- Header --- */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+header img {
+  height: 60px;
+  border-radius: 50%;
+}
+header h1 {
+  font-size: 1.8em;
+  margin: 0;
+  color: #1a365d;
+}
 
-  .group-content {
-    padding: 0;
-    overflow-x: auto;
-    transition: all 0.3s ease;
-  }
+/* --- Controls --- */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.controls input, .controls select, .controls button {
+  padding: 6px 10px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 0.95em;
+}
+.controls input:focus, .controls select:focus {
+  outline: none;
+  border-color: #2b6cb0;
+  box-shadow: 0 0 4px rgba(43,108,176,0.3);
+}
+.controls button {
+  background-color: #2b6cb0;
+  color: white;
+  cursor: pointer;
+}
+.controls button:hover {
+  background-color: #1e4e8c;
+}
 
-  .group-content.hidden {
+/* --- Group containers --- */
+section {
+  margin-bottom: 1rem;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+.group-header {
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 0.6rem 1rem;
+  background: linear-gradient(to right, #ef4444, #f97316);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+.group-content {
+  padding: 0;
+  overflow-x: auto;
+  transition: all 0.3s ease;
+}
+.group-content.hidden {
+  display: none;
+}
+
+/* --- Table --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+thead th {
+  background: #f3f4f6;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 0.5rem;
+  text-align: left;
+  cursor: pointer;
+}
+tbody td {
+  border-top: 1px solid #e5e7eb;
+  padding: 0.4rem 0.5rem;
+}
+tbody tr:hover {
+  background: #f9fafb;
+}
+th.sort-asc, th.sort-desc {
+  background: #e5e7eb;
+}
+th::after {
+  content: ''; /* Remove arrows */
+}
+
+/* --- Responsive table --- */
+@media (max-width: 768px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  thead {
     display: none;
   }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
+  tr {
+    margin-bottom: 12px;
+    border-bottom: 1px solid #ddd;
   }
-
-  thead th {
-    background: #f3f4f6;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    padding: 0.5rem;
-    text-align: left;
-    cursor: pointer;
+  td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
   }
-
-  tbody td {
-    border-top: 1px solid #e5e7eb;
-    padding: 0.4rem 0.5rem;
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #2b6cb0;
   }
-
-  tbody tr:hover {
-    background: #f9fafb;
-  }
-
-  th.sort-asc, th.sort-desc {
-    background: #e5e7eb;
-  }
-
-  /* Hide the arrow icons from previous versions */
-  th::after {
-    content: '';
-  }
+}
 </style>
+</head>
+
+<body>
+<header>
+  <a href="https://www.poriruaheatbasketballclub.org" target="_blank">
+    <img src="images/logo.png" alt="Porirua Heat Logo">
+  </a>
+  <h1>Te Tai Hou Teams – 2025</h1>
+</header>
+
+<div class="controls">
+  <input id="search" type="text" placeholder="Search...">
+  <select id="selectionFilter">
+    <option value="">All Teams</option>
+  </select>
+  <button id="export">Export CSV</button>
+</div>
+
+<div id="table-container"></div>
 
 <script>
 const search = document.getElementById('search');
@@ -109,7 +206,7 @@ function populateDropdown() {
   });
 }
 
-// --- Render grouped tables ---
+// --- Render groups ---
 function renderGroups(rows) {
   container.innerHTML = '';
   const groups = rows.reduce((acc,row)=>{
@@ -130,8 +227,6 @@ function renderGroups(rows) {
     if(!groupRows?.length) return;
 
     const section = document.createElement('section');
-
-    // Group header
     const header = document.createElement('div');
     header.className = 'group-header';
     header.textContent = groupName;
@@ -144,8 +239,6 @@ function renderGroups(rows) {
     wrapper.className = 'group-content';
 
     const table = document.createElement('table');
-
-    // Table header with clickable sorting
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     headers.forEach((h,i)=>{
@@ -157,7 +250,6 @@ function renderGroups(rows) {
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
-    // Table body
     const tbody = document.createElement('tbody');
     groupRows.forEach(r=>{
       const tr = document.createElement('tr');
@@ -174,7 +266,6 @@ function renderGroups(rows) {
     section.appendChild(wrapper);
     container.appendChild(section);
 
-    // Collapsible section
     header.addEventListener('click',()=>{
       wrapper.classList.toggle('hidden');
       arrow.textContent = wrapper.classList.contains('hidden') ? '▲' : '▼';
@@ -216,7 +307,7 @@ function applyFilters() {
 search.addEventListener('input', applyFilters);
 selectionFilter.addEventListener('change', applyFilters);
 
-// --- Export only visible rows ---
+// --- Export visible ---
 exportBtn.addEventListener('click', ()=>{
   const rows = [];
   rows.push(headers.join(','));
@@ -235,3 +326,5 @@ exportBtn.addEventListener('click', ()=>{
   link.click();
 });
 </script>
+</body>
+</html>
