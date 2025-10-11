@@ -29,12 +29,15 @@ header h1 {
 
 /* --- Table layout --- */
 table {
-  width: 100%;
+  width: 50%;                /* table occupies 50% of browser width */
+  max-width: 800px;          /* optional: prevent it from growing too large on wide screens */
   border-collapse: collapse;
   background-color: #fff;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  table-layout: auto;        /* dynamic column widths */
+  margin: 0 auto;            /* center table */
 }
 
 thead th {
