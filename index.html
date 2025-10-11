@@ -5,302 +5,198 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Te Tai Hou Teams - 2025</title>
 <style>
-:root {
-  --primary: #1E40AF;
-  --accent: #FBBF24;
-  --light-bg: #F9FAFB;
-  --border: #E5E7EB;
-  --text-dark: #111827;
-}
-
-body {
-  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-  background: var(--light-bg);
-  color: var(--text-dark);
-  margin: 30px;
-}
-
-header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 32px;
-  color: var(--primary);
-}
-
-header img {
-  height: 60px;
-}
-
-hr {
-  border: none;
-  border-top: 3px solid var(--primary);
-  margin-bottom: 30px;
-}
-
-input, select, button {
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-right: 10px;
-  font-size: 15px;
-}
-
-input:focus, select:focus {
-  border-color: var(--primary);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2);
-}
-
-button {
-  background: var(--primary);
-  color: white;
-  cursor: pointer;
-  border: none;
-  transition: background 0.2s ease-in-out;
-}
-
-button:hover {
-  background: #1E3A8A;
-}
-
-section {
-  background: white;
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 30px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-h2 {
-  margin-top: 0;
-  background: var(--primary);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 20px;
-}
-
-.table-wrapper {
-  overflow-x: auto;
-  margin-top: 10px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: auto;
-  min-width: max-content;
-}
-
-th, td {
-  border-bottom: 1px solid var(--border);
-  padding: 8px 10px;
-  text-align: left;
-  white-space: nowrap;
-}
-
-th {
-  background: #F3F4F6;
-  font-weight: 600;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  cursor: pointer;
-}
-
-th.sort-asc::after {
-  content: " ▲";
-}
-
-th.sort-desc::after {
-  content: " ▼";
-}
-
-tr:hover td {
-  background: #F9FAFB;
-}
+  body { font-family: Arial, sans-serif; margin: 40px; background-color: #fafafa; color: #333; }
+  .header-banner { display: flex; align-items: center; justify-content: center; margin-top: 20px; }
+  .header-banner img { height: 80px; margin-right: 15px; }
+  .header-banner h1 { margin: 0; }
+  hr { margin: 20px 0; }
+  .controls { margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  input, select { padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; }
+  button { padding: 6px 12px; border-radius: 4px; border: none; background-color: #2563eb; color: #fff; cursor: pointer; }
+  button:hover { background-color: #1e40af; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  th { background-color: #f0f0f0; cursor: pointer; }
+  tr:hover { background-color: #f9f9f9; }
+  .group-header td { background-color: #e2e8f0; font-weight: bold; cursor: pointer; }
 </style>
 </head>
 <body>
 
-<header>
-  <a href="https://www.poriruaheatbasketballclub.org" target="_blank" title="Visit Porirua Heat Basketball Club">
-    <img src="images/logo.png" alt="Te Tai Hou Logo">
-  </a>
+<div class="header-banner">
+  <img src="images/logo.png" alt="Te Tai Hou Logo">
   <h1>Te Tai Hou Teams - 2025</h1>
-</header>
-
+</div>
 <hr>
 
-<div>
-  <input type="text" id="search" placeholder="Search players...">
-  <label for="selectionFilter">Filter by Indicative Selection:</label>
-  <select id="selectionFilter">
-    <option value="">All</option>
-  </select>
+<div class="controls">
+  <input type="text" id="search" placeholder="Search table...">
+  <label for="teamFilter">Filter by Eligible Team:</label>
+  <select id="teamFilter"><option value="">All Teams</option></select>
   <button id="export">Export Filtered Data</button>
 </div>
 
-<div id="table-container"></div>
+<table id="data-table">
+  <thead></thead>
+  <tbody></tbody>
+</table>
 
 <script>
-const search = document.getElementById('search');
-const selectionFilter = document.getElementById('selectionFilter');
-const container = document.getElementById('table-container');
-const exportBtn = document.getElementById('export');
+(async function(){
+  const table = document.getElementById('data-table');
+  const tbody = table.tBodies[0];
+  const thead = table.tHead;
+  const search = document.getElementById('search');
+  const teamFilter = document.getElementById('teamFilter');
+  const exportBtn = document.getElementById('export');
 
-let headers = [];
-let allRows = [];
-let indicativeIndex = -1;
+  let allRows = [];
+  let headers = [];
+  let sortColumn = null;
+  let sortAsc = true;
 
-// Custom group order
-const groupOrder = [
-  "10U Dev","10U Elite","12U Dev","12U Elite",
-  "14U Dev Blue","14U Elite Black","14U Elite Gold","14U Dev Red",
-  "16U Dev","16U Elite","20U","Mens","Womens"
-];
+  // Custom group order
+  const customGroupOrder = ['Starters', 'Development', 'Reserve'];
+  const groupState = {}; // Tracks collapsed/expanded state by group
 
-fetch('data.csv')
-  .then(res => res.text())
-  .then(text => {
-    const lines = text.trim().split('\n').map(l => l.split(','));
-    headers = lines[0].map(h => h.trim());
-    indicativeIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
-    // Skip rows with empty Indicative Selection
-    allRows = lines.slice(1).filter(r => r[indicativeIndex]?.trim() !== '');
-    populateDropdown();
-    renderGroups(allRows);
+  // Load CSV
+  const res = await fetch('data/data.csv');
+  const text = await res.text();
+  const lines = text.trim().split('\n');
+  headers = lines[0].split(',').map(h => h.trim());
+  allRows = lines.slice(1).map(line => line.split(','));
+
+  // Render table headers
+  const headerRow = document.createElement('tr');
+  headers.forEach((header, i) => {
+    const th = document.createElement('th');
+    th.textContent = header;
+    th.addEventListener('click', () => sortTable(i));
+    headerRow.appendChild(th);
   });
+  thead.appendChild(headerRow);
 
-function populateDropdown() {
-  const unique = [...new Set(allRows.map(r => r[indicativeIndex].trim()))];
-  const ordered = groupOrder.concat(unique.filter(v => !groupOrder.includes(v)));
-  ordered.forEach(v => {
+  // Indexes for filters
+  const teamIndex = headers.findIndex(h => h.toLowerCase() === 'eligible team');
+  const groupIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
+  const firstNameIndex = headers.findIndex(h => h.toLowerCase() === 'first name');
+
+  // Populate dropdown
+  const uniqueTeams = [...new Set(allRows.map(r => r[teamIndex]))].sort();
+  uniqueTeams.forEach(team => {
     const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = v;
-    selectionFilter.appendChild(opt);
+    opt.value = team;
+    opt.textContent = team;
+    teamFilter.appendChild(opt);
   });
-}
 
-function renderGroups(rows) {
-  container.innerHTML = '';
+  // Initial render
+  renderGroupedRows(allRows);
 
-  // Build groups with trimmed keys
-  const groups = rows.reduce((acc,row) => {
-    const key = row[indicativeIndex].trim();
-    if(!acc[key]) acc[key] = [];
-    acc[key].push(row);
-    return acc;
-  }, {});
+  // Event listeners for filters
+  search.addEventListener('input', applyFilters);
+  teamFilter.addEventListener('change', applyFilters);
 
-  const filterVal = selectionFilter.value;
-
-  // Combine groupOrder + remaining groups
-  const allGroupKeys = Object.keys(groups);
-  let visibleKeys;
-  if(filterVal) {
-    visibleKeys = [filterVal];
-  } else {
-    visibleKeys = [
-      ...groupOrder.filter(g => allGroupKeys.includes(g)),
-      ...allGroupKeys.filter(k => !groupOrder.includes(k))
-    ];
+  function applyFilters(){
+    const q = search.value.trim().toLowerCase();
+    const selectedTeam = teamFilter.value;
+    const filtered = allRows.filter(row => {
+      const matchesSearch = row.some(c => c.toLowerCase().includes(q));
+      const matchesTeam = !selectedTeam || row[teamIndex] === selectedTeam;
+      const hasGroup = row[groupIndex].trim() !== ''; // Exclude rows without group
+      return matchesSearch && matchesTeam && hasGroup;
+    });
+    renderGroupedRows(filtered);
   }
 
-  visibleKeys.forEach(groupName => {
-    const groupRows = groups[groupName];
-    if(!groupRows || groupRows.length === 0) return;
-
-    const section = document.createElement('section');
-    const title = document.createElement('h2');
-    title.textContent = groupName;
-    section.appendChild(title);
-
-    const wrapper = document.createElement('div');
-    wrapper.classList.add('table-wrapper');
-
-    const table = document.createElement('table');
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    headers.forEach((h, i) => {
-      const th = document.createElement('th');
-      th.textContent = h;
-      th.addEventListener('click', () => sortTable(table, i));
-      headerRow.appendChild(th);
+  function renderGroupedRows(rows){
+    tbody.innerHTML = '';
+    const grouped = {};
+    rows.forEach(r => {
+      const key = r[groupIndex];
+      if(!grouped[key]) grouped[key] = [];
+      grouped[key].push(r);
     });
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
 
-    const tbody = document.createElement('tbody');
-    groupRows.forEach(r => {
-      const tr = document.createElement('tr');
-      r.forEach(cell => {
-        const td = document.createElement('td');
-        td.textContent = cell.trim();
-        tr.appendChild(td);
+    // Sort groups according to custom order
+    const sortedGroups = Object.keys(grouped).sort((a,b) => {
+      const idxA = customGroupOrder.indexOf(a);
+      const idxB = customGroupOrder.indexOf(b);
+      if(idxA === -1 && idxB === -1) return a.localeCompare(b);
+      if(idxA === -1) return 1;
+      if(idxB === -1) return -1;
+      return idxA - idxB;
+    });
+
+    sortedGroups.forEach(group => {
+      // Sort rows in the group by First Name
+      grouped[group].sort((a,b) => a[firstNameIndex].localeCompare(b[firstNameIndex]));
+
+      // Render group header
+      const trGroup = document.createElement('tr');
+      trGroup.className = 'group-header';
+      const tdGroup = document.createElement('td');
+      tdGroup.colSpan = headers.length;
+
+      // Default expanded if state not set
+      if (!(group in groupState)) groupState[group] = false; // false = expanded
+      tdGroup.textContent = (groupState[group] ? '▶ ' : '▼ ') + group;
+
+      trGroup.appendChild(tdGroup);
+      tbody.appendChild(trGroup);
+
+      // Render rows
+      const groupRows = grouped[group].map(row => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        // Hide rows if collapsed
+        if (groupState[group]) tr.style.display = 'none';
+        return tr;
       });
-      tbody.appendChild(tr);
+      groupRows.forEach(tr => tbody.appendChild(tr));
+
+      // Collapsible toggle
+      trGroup.addEventListener('click', () => {
+        groupState[group] = !groupState[group]; // toggle state
+        groupRows.forEach(tr => tr.style.display = groupState[group] ? 'none' : '');
+        tdGroup.textContent = (groupState[group] ? '▶ ' : '▼ ') + group;
+      });
     });
-    table.appendChild(tbody);
-    wrapper.appendChild(table);
-    section.appendChild(wrapper);
-    container.appendChild(section);
+  }
+
+  function sortTable(index){
+    if(sortColumn === index) sortAsc = !sortAsc;
+    else { sortColumn = index; sortAsc = true; }
+
+    allRows.sort((a,b) => {
+      const valA = a[index].toLowerCase();
+      const valB = b[index].toLowerCase();
+      if(valA < valB) return sortAsc ? -1 : 1;
+      if(valA > valB) return sortAsc ? 1 : -1;
+      return 0;
+    });
+    applyFilters(); // Re-render with new sort
+  }
+
+  exportBtn.addEventListener('click', () => {
+    const rows = Array.from(tbody.querySelectorAll('tr')).map(r =>
+      Array.from(r.children).map(td => td.textContent)
+    );
+    const csvContent = rows.map(r =>
+      r.map(cell => `"${cell.replace(/"/g,'""')}"`).join(',')
+    ).join('\n');
+    const blob = new Blob([csvContent], {type:'text/csv;charset=utf-8;'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'TeTaiHouTeams2025.csv';
+    link.click();
   });
-}
 
-function sortTable(table, colIndex) {
-  const tbody = table.querySelector('tbody');
-  const rows = Array.from(tbody.querySelectorAll('tr'));
-  const th = table.querySelectorAll('th')[colIndex];
-  const asc = !th.classList.contains('sort-asc');
-
-  rows.sort((a,b) => {
-    const aText = a.children[colIndex].textContent.trim().toLowerCase();
-    const bText = b.children[colIndex].textContent.trim().toLowerCase();
-    if(!isNaN(aText) && !isNaN(bText)) return asc ? aText - bText : bText - aText;
-    return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
-  });
-
-  rows.forEach(r => tbody.appendChild(r));
-  table.querySelectorAll('th').forEach(h => h.classList.remove('sort-asc','sort-desc'));
-  th.classList.toggle(asc ? 'sort-asc' : 'sort-desc');
-}
-
-function applyFilters() {
-  const q = search.value.toLowerCase();
-  const teamVal = selectionFilter.value;
-  const filtered = allRows.filter(r => {
-    const matchesSearch = r.some(c => c.toLowerCase().includes(q));
-    const matchesSel = !teamVal || r[indicativeIndex] === teamVal;
-    return matchesSearch && matchesSel;
-  });
-  renderGroups(filtered);
-}
-
-search.addEventListener('input', applyFilters);
-selectionFilter.addEventListener('change', applyFilters);
-
-exportBtn.addEventListener('click', () => {
-  const rows = [];
-  rows.push(headers.join(','));
-  const trs = container.querySelectorAll('section table tbody tr');
-  trs.forEach(tr => {
-    const cells = Array.from(tr.children).map(td => td.textContent);
-    rows.push(cells.join(','));
-  });
-  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'filtered_data.csv';
-  link.click();
-});
+})();
 </script>
 
 </body>
