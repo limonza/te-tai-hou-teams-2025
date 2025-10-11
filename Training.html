@@ -16,15 +16,11 @@ body {
   display: flex;
   justify-content: center;
 }
-
-/* --- Page wrapper centered --- */
 #page-wrapper {
   width: 100%;
   max-width: 40%;
   min-width: 320px;
 }
-
-/* --- Header --- */
 header {
   display: flex;
   align-items: center;
@@ -32,15 +28,8 @@ header {
   gap: 12px;
   margin-bottom: 24px;
 }
-header img {
-  height: 60px;
-  border-radius: 50%;
-}
-header h1 {
-  font-size: 1.8em;
-  margin: 0;
-  color: #1a365d;
-}
+header img { height: 60px; border-radius: 50%; }
+header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
 
 /* --- Controls --- */
 .controls {
@@ -89,22 +78,11 @@ section {
   align-items: center;
   cursor: pointer;
 }
-.group-content {
-  padding: 0;
-  overflow-x: auto;
-  transition: all 0.3s ease;
-}
-.group-content.hidden {
-  display: none;
-}
+.group-content { padding: 0; overflow-x: auto; transition: all 0.3s ease; }
+.group-content.hidden { display: none; }
 
 /* --- Table --- */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-  table-layout: fixed;
-}
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
 thead th {
   background: #f3f4f6;
   position: sticky;
@@ -118,38 +96,17 @@ tbody td {
   padding: 0.4rem 0.5rem;
   word-wrap: break-word;
 }
-tbody tr:hover {
-  background: #f9fafb;
-}
-th::after {
-  content: '';
-}
+tbody tr:hover { background: #f9fafb; }
+th::after { content: ''; }
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
-  #page-wrapper {
-    max-width: 100%;
-  }
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
-  thead {
-    display: none;
-  }
-  tr {
-    margin-bottom: 12px;
-    border-bottom: 1px solid #ddd;
-  }
-  td {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px;
-  }
-  td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #2b6cb0;
-  }
+  #page-wrapper { max-width: 100%; }
+  table, thead, tbody, th, td, tr { display: block; }
+  thead { display: none; }
+  tr { margin-bottom: 12px; border-bottom: 1px solid #ddd; }
+  td { display: flex; justify-content: space-between; padding: 8px; }
+  td::before { content: attr(data-label); font-weight: 600; color: #2b6cb0; }
 }
 </style>
 </head>
@@ -165,9 +122,7 @@ th::after {
 
 <div class="controls">
   <input id="search" type="text" placeholder="Search...">
-  <select id="selectionFilter">
-    <option value="">All Teams</option>
-  </select>
+  <select id="selectionFilter"><option value="">All Teams</option></select>
   <button id="export">Export CSV</button>
   <button id="toggleGroups">Collapse All</button>
 </div>
@@ -184,11 +139,11 @@ const toggleGroupsBtn = document.getElementById('toggleGroups');
 
 let headers = [];
 let allRows = [];
-let groupIndex = 1; // Second column is the Group
-let nameIndex = 0;  // First column is Name
-let leagueIndex = 2; // Third column is Leagues
+const nameIndex = 0;  // First column: Name
+const groupIndex = 1; // Second column: Group
+const leagueIndex = 2; // Third column: Leagues
 
-const customGroupOrder = ["Group1", "Group2", "Group3", "Group4"];
+const customGroupOrder = ["Group1","Group2","Group3","Group4"];
 
 // --- Load CSV ---
 fetch('Sunday.csv')
@@ -232,8 +187,11 @@ function renderGroups(rows) {
     : [...customGroupOrder.filter(g => allGroupKeys.includes(g)), ...remainingGroups];
 
   visibleKeys.forEach(groupName => {
-    const groupRows = groups[groupName];
+    let groupRows = groups[groupName];
     if (!groupRows?.length) return;
+
+    // --- SORT by Name within group ---
+    groupRows = groupRows.sort((a,b) => a[nameIndex].localeCompare(b[nameIndex]));
 
     const section = document.createElement('section');
     const header = document.createElement('div');
@@ -247,8 +205,7 @@ function renderGroups(rows) {
     const table = document.createElement('table');
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
-
-    headers.forEach((h, i) => {
+    headers.forEach((h,i) => {
       const th = document.createElement('th');
       th.textContent = h;
       headerRow.appendChild(th);
@@ -259,7 +216,7 @@ function renderGroups(rows) {
     const tbody = document.createElement('tbody');
     groupRows.forEach(r => {
       const tr = document.createElement('tr');
-      r.forEach((c, i) => {
+      r.forEach((c,i) => {
         const td = document.createElement('td');
         td.textContent = c;
         td.setAttribute('data-label', headers[i]);
@@ -295,7 +252,6 @@ function applyFilters() {
   });
   renderGroups(filtered);
 }
-
 search.addEventListener('input', applyFilters);
 selectionFilter.addEventListener('change', applyFilters);
 
