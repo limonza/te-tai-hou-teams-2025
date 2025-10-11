@@ -164,7 +164,7 @@ const groupOrder = [
 ];
 
 async function loadData() {
-  const response = await fetch('data.csv');
+  const response = await fetch('teams.csv');
   const text = await response.text();
   const rows = text.trim().split('\n').map(r => r.split(','));
 
@@ -268,3 +268,4 @@ loadData();
 </script>
 </body>
 </html>
+
