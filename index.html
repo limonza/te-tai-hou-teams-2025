@@ -180,6 +180,7 @@ const search = document.getElementById('search');
 const selectionFilter = document.getElementById('selectionFilter');
 const container = document.getElementById('table-container');
 const exportBtn = document.getElementById('export');
+const toggleGroupsBtn = document.getElementById('toggleGroups');
 
 let headers = [];
 let allRows = [];
@@ -282,6 +283,7 @@ function renderGroups(rows) {
     section.appendChild(wrapper);
     container.appendChild(section);
 
+    // Toggle individual group
     header.addEventListener('click', () => {
       wrapper.classList.toggle('hidden');
       const arrow = header.querySelector('span:last-child');
@@ -325,34 +327,28 @@ exportBtn.addEventListener('click', () => {
   link.href = URL.createObjectURL(blob);
   link.download = 'filtered_data.csv';
   link.click();
+});
 
-  const toggleGroupsBtn = document.getElementById('toggleGroups');
-
+// --- Expand / Collapse All ---
 toggleGroupsBtn.addEventListener('click', () => {
   const allGroups = container.querySelectorAll('.group-content');
   const anyOpen = Array.from(allGroups).some(g => !g.classList.contains('hidden'));
 
-  allGroups.forEach((groupContent, idx) => {
+  allGroups.forEach(groupContent => {
     const section = groupContent.parentElement;
     const header = section.querySelector('.group-header span:last-child');
+    const count = groupContent.querySelectorAll('tbody tr').length;
     if (anyOpen) {
-      // Collapse all
       groupContent.classList.add('hidden');
-      const count = groupContent.querySelectorAll('tbody tr').length;
       header.textContent = `(${count}) ▲`;
     } else {
-      // Expand all
       groupContent.classList.remove('hidden');
-      const count = groupContent.querySelectorAll('tbody tr').length;
       header.textContent = `(${count}) ▼`;
     }
   });
 
   toggleGroupsBtn.textContent = anyOpen ? 'Expand All' : 'Collapse All';
-  
 });
 </script>
 </body>
 </html>
-
-
