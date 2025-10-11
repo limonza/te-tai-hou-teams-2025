@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Te Tai Hou Teams – 2025</title>
 <style>
-/* --- General page setup --- */
 body {
   font-family: "Segoe UI", Roboto, sans-serif;
   background-color: #f9fafb;
@@ -14,28 +13,17 @@ body {
   color: #333;
 }
 
-/* --- Page header --- */
 header {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* logo left of heading */
   gap: 12px;
   margin-bottom: 24px;
 }
 
-header img {
-  height: 60px;
-  border-radius: 50%;
-}
+header img { height: 60px; border-radius: 50%; }
+header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
 
-header h1 {
-  font-size: 1.8em;
-  margin: 0;
-  color: #1a365d;
-}
-
-/* --- Controls --- */
-.controls, .group-controls {
+.controls {
   display: flex;
   justify-content: center;
   gap: 10px;
@@ -56,20 +44,22 @@ header h1 {
   box-shadow: 0 0 4px rgba(43,108,176,0.3);
 }
 
-/* --- Table layout --- */
-table {
+#table-container {
   width: 50%;
   max-width: 800px;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+
+#main-table {
+  width: 100%;
   border-collapse: collapse;
   background-color: #fff;
   border-radius: 10px;
-  overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  table-layout: auto;
-  margin: 0 auto;
 }
 
-thead th {
+#main-table thead th {
   position: sticky;
   top: 0;
   background-color: #2b6cb0;
@@ -78,71 +68,59 @@ thead th {
   padding: 10px;
   font-weight: 600;
   border-bottom: 2px solid #1a365d;
-  z-index: 2;
+  z-index: 3;
   cursor: pointer;
 }
 
-tbody td {
+#main-table tbody td {
   padding: 10px;
   border-bottom: 1px solid #e2e8f0;
 }
 
 /* --- Group headers --- */
-.group-header {
+.group-header-row {
+  display: table-row;
   background-color: #e6fffa;
   color: #234e52;
   font-weight: bold;
-  padding: 8px;
   cursor: pointer;
   border-top: 2px solid #81e6d9;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  z-index: 2;
+  position: sticky;
+  top: 40px;
 }
 
-.group-header:hover {
-  background-color: #b2f5ea;
+.group-header-row td {
+  padding: 8px;
 }
 
-.group-header span.arrow {
-  margin-left: 10px;
+.group-header-row:hover td { background-color: #b2f5ea; }
+
+/* --- Collapsible group content animation --- */
+.group-content-wrapper {
+  display: table-row-group;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
 }
 
-/* --- Collapsible content --- */
-.group-content {
-  transition: all 0.3s ease;
+.group-content-wrapper.hidden {
+  max-height: 0 !important;
 }
 
-.group-content.hidden {
-  display: none;
-}
-
-/* --- Responsive table --- */
+/* Responsive */
 @media (max-width: 768px) {
-  table, thead, tbody, th, td, tr {
+  #main-table, thead, tbody, th, td, tr {
     display: block;
   }
 
-  thead {
-    display: none;
-  }
+  thead { display: none; }
+  tr { margin-bottom: 12px; border-bottom: 1px solid #ddd; }
 
-  tr {
-    margin-bottom: 12px;
-    border-bottom: 1px solid #ddd;
-  }
+  td { display: flex; justify-content: space-between; padding: 8px; }
+  td::before { content: attr(data-label); font-weight: 600; color: #2b6cb0; }
 
-  td {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px;
-  }
-
-  td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #2b6cb0;
-  }
+  .group-header-row { display: block; position: static; }
+  .group-content-wrapper { display: block; max-height: none; }
 }
 </style>
 </head>
@@ -163,27 +141,32 @@ tbody td {
   <button id="export">Export Filtered Data</button>
 </div>
 
-<div id="table-container"></div>
+<div id="table-container">
+  <table id="main-table">
+    <thead>
+      <tr id="header-row"></tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</div>
 
 <script>
-// --- Variables ---
 const search = document.getElementById('search');
 const selectionFilter = document.getElementById('selectionFilter');
-const container = document.getElementById('table-container');
+const tbody = document.getElementById('table-body');
+const headerRow = document.getElementById('header-row');
 const exportBtn = document.getElementById('export');
 
 let headers = [];
 let allRows = [];
 let indicativeIndex = -1;
 
-// Custom group order
 const groupOrder = [
   "10U Dev","10U Elite","12U Dev","12U Elite",
   "14U Dev Blue","14U Elite Black","14U Elite Gold","14U Dev Red",
   "16U Dev","16U Elite","20U","Mens","Womens"
 ];
 
-// --- Load CSV ---
 fetch('teams.csv')
   .then(res => res.text())
   .then(text => {
@@ -192,10 +175,20 @@ fetch('teams.csv')
     indicativeIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
     allRows = lines.slice(1).filter(r => r[indicativeIndex]?.trim() !== '');
     populateDropdown();
+    populateHeaderRow();
     renderGroups(allRows);
   });
 
-// --- Populate dropdown ---
+function populateHeaderRow() {
+  headerRow.innerHTML = '';
+  headers.forEach((h,i)=>{
+    const th = document.createElement('th');
+    th.textContent = h;
+    th.addEventListener('click', ()=>sortTable(document.getElementById('main-table'), i));
+    headerRow.appendChild(th);
+  });
+}
+
 function populateDropdown() {
   const unique = [...new Set(allRows.map(r => r[indicativeIndex].trim()))];
   const ordered = groupOrder.concat(unique.filter(v => !groupOrder.includes(v)));
@@ -207,9 +200,8 @@ function populateDropdown() {
   });
 }
 
-// --- Render groups ---
 function renderGroups(rows) {
-  container.innerHTML = '';
+  tbody.innerHTML = '';
   const groups = rows.reduce((acc,row) => {
     const key = row[indicativeIndex].trim();
     if(!acc[key]) acc[key] = [];
@@ -227,33 +219,16 @@ function renderGroups(rows) {
     const groupRows = groups[groupName];
     if(!groupRows || groupRows.length === 0) return;
 
-    const section = document.createElement('section');
+    const headerTr = document.createElement('tr');
+    headerTr.className = 'group-header-row';
+    const headerTd = document.createElement('td');
+    headerTd.colSpan = headers.length;
+    headerTd.textContent = groupName + ' ▼';
+    headerTr.appendChild(headerTd);
+    tbody.appendChild(headerTr);
 
-    const header = document.createElement('div');
-    header.className = 'group-header';
-    header.textContent = groupName;
-    const arrow = document.createElement('span');
-    arrow.className = 'arrow';
-    arrow.textContent = '▼';
-    header.appendChild(arrow);
-    section.appendChild(header);
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'group-content';
-
-    const table = document.createElement('table');
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    headers.forEach((h,i)=>{
-      const th = document.createElement('th');
-      th.textContent = h;
-      th.addEventListener('click',()=>sortTable(table,i));
-      headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    const tbody = document.createElement('tbody');
+    const contentWrapper = document.createElement('tbody');
+    contentWrapper.className = 'group-content-wrapper';
     groupRows.forEach(r=>{
       const tr = document.createElement('tr');
       r.forEach((c,idx)=>{
@@ -262,25 +237,30 @@ function renderGroups(rows) {
         td.setAttribute('data-label', headers[idx]);
         tr.appendChild(td);
       });
-      tbody.appendChild(tr);
+      contentWrapper.appendChild(tr);
     });
-    table.appendChild(tbody);
-    wrapper.appendChild(table);
-    section.appendChild(wrapper);
-    container.appendChild(section);
+    tbody.appendChild(contentWrapper);
 
-    // --- Collapse/expand ---
-    header.addEventListener('click', ()=>{
-      wrapper.classList.toggle('hidden');
-      arrow.textContent = wrapper.classList.contains('hidden') ? '▲' : '▼';
+    // Set initial height dynamically
+    contentWrapper.style.maxHeight = contentWrapper.scrollHeight + 'px';
+
+    headerTr.addEventListener('click', ()=>{
+      const isHidden = contentWrapper.classList.toggle('hidden');
+      headerTd.textContent = groupName + (isHidden ? ' ▲' : ' ▼');
+
+      if(isHidden) {
+        contentWrapper.style.maxHeight = '0';
+      } else {
+        // Reset maxHeight dynamically for smooth expansion
+        contentWrapper.style.maxHeight = contentWrapper.scrollHeight + 'px';
+      }
     });
   });
 }
 
-// --- Sorting ---
 function sortTable(table,colIndex) {
   const tbody = table.querySelector('tbody');
-  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const rows = Array.from(tbody.querySelectorAll('tr')).filter(r=>!r.classList.contains('group-header-row'));
   const th = table.querySelectorAll('th')[colIndex];
   const asc = !th.classList.contains('sort-asc');
 
@@ -296,7 +276,6 @@ function sortTable(table,colIndex) {
   th.classList.toggle(asc?'sort-asc':'sort-desc');
 }
 
-// --- Filters/search ---
 function applyFilters() {
   const q = search.value.toLowerCase();
   const sel = selectionFilter.value;
@@ -311,11 +290,11 @@ function applyFilters() {
 search.addEventListener('input', applyFilters);
 selectionFilter.addEventListener('change', applyFilters);
 
-// --- Export filtered data ---
 exportBtn.addEventListener('click', ()=>{
   const rows = [];
   rows.push(headers.join(','));
-  container.querySelectorAll('tbody tr').forEach(tr=>{
+  tbody.querySelectorAll('tr').forEach(tr=>{
+    if(tr.classList.contains('group-header-row')) return;
     const cells = Array.from(tr.children).map(td=>td.textContent);
     rows.push(cells.join(','));
   });
@@ -326,7 +305,5 @@ exportBtn.addEventListener('click', ()=>{
   link.click();
 });
 </script>
-
 </body>
 </html>
-
