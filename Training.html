@@ -191,7 +191,7 @@ let leagueIndex = 2; // Third column is Leagues
 const customGroupOrder = ["Group1", "Group2", "Group3", "Group4"];
 
 // --- Load CSV ---
-fetch('teams.csv')
+fetch('Sunday.csv')
   .then(res => res.text())
   .then(text => {
     const lines = text.trim().split('\n').map(l => l.split(','));
