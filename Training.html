@@ -4,143 +4,48 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Te Tai Hou Teams – 2025</title>
-
-<!-- jsPDF & html2canvas for PDF generation -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
 <style>
-/* --- General page setup --- */
-body {
-  font-family: "Segoe UI", Roboto, sans-serif;
-  background-color: #f9fafb;
-  margin: 0;
-  padding: 20px;
-  color: #333;
-  display: flex;
-  justify-content: center;
-}
-
-#page-wrapper {
-  width: 100%;
-  max-width: 40%;
-  min-width: 320px;
-}
-
-/* --- Header --- */
-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-header img { height: 60px; border-radius: 50%; }
-header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
-
-/* --- Controls --- */
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-.controls input, .controls select, .controls button {
-  padding: 6px 10px;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  font-size: 0.95em;
-}
-.controls input:focus, .controls select:focus {
-  outline: none;
-  border-color: #2b6cb0;
-  box-shadow: 0 0 4px rgba(43,108,176,0.3);
-}
-.controls button {
-  background-color: #2b6cb0;
-  color: white;
-  cursor: pointer;
-}
-.controls button:hover {
-  background-color: #1e4e8c;
-}
-
-/* --- Group containers --- */
-section {
-  margin-bottom: 1rem;
-  border-radius: 0.75rem;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  overflow: hidden;
-}
-.group-header {
-  font-weight: 600;
-  font-size: 1.1rem;
-  padding: 0.6rem 1rem;
-  background: linear-gradient(to right, #ef4444, #f97316);
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-.group-content { padding: 0; overflow-x: auto; transition: all 0.3s ease; }
-.group-content.hidden { display: none; }
-
-/* --- Table --- */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-  table-layout: fixed;
-}
-thead th {
-  background: #f3f4f6;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  padding: 0.5rem;
-  text-align: left;
-}
-tbody td {
-  border-top: 1px solid #e5e7eb;
-  padding: 0.4rem 0.5rem;
-  word-wrap: break-word;
-}
-tbody tr:hover { background: #f9fafb; }
-th::after { content: ''; }
-
-/* --- Responsive --- */
-@media (max-width: 768px) {
-  #page-wrapper { max-width: 100%; }
-  table, thead, tbody, th, td, tr { display: block; }
-  thead { display: none; }
-  tr { margin-bottom: 12px; border-bottom: 1px solid #ddd; }
-  td { display: flex; justify-content: space-between; padding: 8px; }
-  td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #2b6cb0;
-  }
+body { font-family: "Segoe UI", Roboto, sans-serif; background:#f9fafb; margin:0; padding:20px; color:#333; display:flex; justify-content:center; }
+#page-wrapper { width:100%; max-width:40%; min-width:320px; }
+header { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:24px; }
+header img { height:60px; border-radius:50%; }
+header h1 { font-size:1.8em; margin:0; color:#1a365d; }
+.controls { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+.controls input, .controls select, .controls button { padding:6px 10px; border:1px solid #cbd5e0; border-radius:6px; font-size:0.95em; }
+.controls input:focus, .controls select:focus { outline:none; border-color:#2b6cb0; box-shadow:0 0 4px rgba(43,108,176,0.3); }
+.controls button { background:#2b6cb0; color:white; cursor:pointer; }
+.controls button:hover { background:#1e4e8c; }
+section { margin-bottom:1rem; border-radius:0.75rem; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.1); overflow:hidden; }
+.group-header { font-weight:600; font-size:1.1rem; padding:0.6rem 1rem; background:linear-gradient(to right,#ef4444,#f97316); color:#fff; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+.group-content { padding:0; overflow-x:auto; transition:all 0.3s ease; }
+.group-content.hidden { display:none; }
+table { width:100%; border-collapse:collapse; font-size:0.9rem; table-layout:fixed; }
+thead th { background:#f3f4f6; position:sticky; top:0; z-index:2; padding:0.5rem; text-align:left; }
+tbody td { border-top:1px solid #e5e7eb; padding:0.4rem 0.5rem; word-wrap:break-word; }
+tbody tr:hover { background:#f9fafb; }
+th::after { content:''; }
+@media (max-width:768px) {
+  #page-wrapper { max-width:100%; }
+  table, thead, tbody, th, td, tr { display:block; }
+  thead { display:none; }
+  tr { margin-bottom:12px; border-bottom:1px solid #ddd; }
+  td { display:flex; justify-content:space-between; padding:8px; }
+  td::before { content:attr(data-label); font-weight:600; color:#2b6cb0; }
 }
 </style>
 </head>
-
 <body>
 <div id="page-wrapper">
 <header>
-  <a href="https://www.poriruaheatbasketball.org" target="_blank">
-    <img src="images/logo.png" alt="Porirua Heat Logo">
-  </a>
+  <a href="https://www.poriruaheatbasketball.org" target="_blank"><img src="images/logo.png" alt="Porirua Heat Logo"></a>
   <h1>TE TAI HOU TEAMS – 2025 TERM 4</h1>
 </header>
 
 <div class="controls">
   <input id="search" type="text" placeholder="Search...">
-  <select id="selectionFilter">
-    <option value="">All Teams</option>
-  </select>
+  <select id="selectionFilter"><option value="">All Teams</option></select>
   <button id="export">Export CSV</button>
   <button id="toggleGroups">Collapse All</button>
   <button id="pdfBtn">Generate PDF</button>
@@ -161,127 +66,157 @@ let headers = [];
 let allRows = [];
 const nameIndex = 0;
 const groupIndex = 1;
-const leagueIndex = 2;
-const customGroupOrder = ["Group1", "Group2", "Group3", "Group4"];
+const customGroupOrder = ["Group1","Group2","Group3","Group4"];
 
 // --- Load CSV ---
 fetch('Sunday.csv')
-  .then(res => res.text())
-  .then(text => {
-    const lines = text.trim().split('\n').map(l => l.split(','));
-    headers = lines[0].map(h => h.trim());
-    allRows = lines.slice(1).map(r => r.map(c => c.trim()));
-    populateDropdown();
-    renderGroups(allRows);
-  });
+.then(res => res.text())
+.then(text => {
+  const lines = text.trim().split('\n').map(l=>l.split(','));
+  headers = lines[0].map(h=>h.trim());
+  allRows = lines.slice(1).map(r=>r.map(c=>c.trim()));
+  populateDropdown();
+  renderGroups(allRows);
+});
 
 // --- Populate dropdown ---
 function populateDropdown() {
-  const unique = [...new Set(allRows.map(r => r[groupIndex]))];
-  const ordered = customGroupOrder.concat(unique.filter(v => !customGroupOrder.includes(v)));
-  ordered.forEach(v => {
-    const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = v;
+  const unique = [...new Set(allRows.map(r=>r[groupIndex]))];
+  const ordered = customGroupOrder.concat(unique.filter(v=>!customGroupOrder.includes(v)));
+  ordered.forEach(v=>{
+    const opt = document.createElement('option'); opt.value=v; opt.textContent=v;
     selectionFilter.appendChild(opt);
   });
 }
 
 // --- Render groups ---
 function renderGroups(rows) {
-  container.innerHTML = '';
-  const groups = rows.reduce((acc, row) => {
-    const key = row[groupIndex];
-    if (!acc[key]) acc[key] = [];
+  container.innerHTML='';
+  const groups = rows.reduce((acc,row)=>{
+    const key=row[groupIndex];
+    if(!acc[key]) acc[key]=[];
     acc[key].push(row);
     return acc;
-  }, {});
+  },{});
 
   const filterVal = selectionFilter.value;
   const allGroupKeys = Object.keys(groups);
-  const remainingGroups = allGroupKeys.filter(g => !customGroupOrder.includes(g)).sort();
-  const visibleKeys = filterVal
-    ? [filterVal]
-    : [...customGroupOrder.filter(g => allGroupKeys.includes(g)), ...remainingGroups];
+  const remainingGroups = allGroupKeys.filter(g=>!customGroupOrder.includes(g)).sort();
+  const visibleKeys = filterVal?[filterVal]:[...customGroupOrder.filter(g=>allGroupKeys.includes(g)),...remainingGroups];
 
-  visibleKeys.forEach(groupName => {
+  visibleKeys.forEach(groupName=>{
     let groupRows = groups[groupName];
-    if (!groupRows?.length) return;
+    if(!groupRows?.length) return;
 
-    // --- Sort by Name ---
-    groupRows = groupRows.sort((a,b) => a[nameIndex].localeCompare(b[nameIndex]));
+    // Sort by Name
+    groupRows = groupRows.sort((a,b)=>a[nameIndex].localeCompare(b[nameIndex]));
 
     const section = document.createElement('section');
     const header = document.createElement('div');
-    header.className = 'group-header';
-    header.innerHTML = `<span>${groupName}</span><span>(${groupRows.length}) ▼</span>`;
+    header.className='group-header';
+    header.innerHTML=`<span>${groupName}</span><span>(${groupRows.length}) ▼</span>`;
     section.appendChild(header);
 
     const wrapper = document.createElement('div');
-    wrapper.className = 'group-content';
+    wrapper.className='group-content';
 
     const table = document.createElement('table');
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
-    headers.forEach(h => {
-      const th = document.createElement('th');
-      th.textContent = h;
-      headerRow.appendChild(th);
-    });
+    headers.forEach(h=>{const th=document.createElement('th'); th.textContent=h; headerRow.appendChild(th);});
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
     const tbody = document.createElement('tbody');
-    groupRows.forEach(r => {
-      const tr = document.createElement('tr');
-      r.forEach((c,i) => {
-        const td = document.createElement('td');
-        td.textContent = c;
-        td.setAttribute('data-label', headers[i]);
+    groupRows.forEach(r=>{
+      const tr=document.createElement('tr');
+      r.forEach((c,i)=>{
+        const td=document.createElement('td');
+        td.textContent=c;
+        td.setAttribute('data-label',headers[i]);
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
     });
     table.appendChild(tbody);
-
     wrapper.appendChild(table);
     section.appendChild(wrapper);
     container.appendChild(section);
 
-    // --- Toggle individual group ---
-    header.addEventListener('click', () => {
+    // Toggle individual group
+    header.addEventListener('click',()=>{
       wrapper.classList.toggle('hidden');
-      const arrow = header.querySelector('span:last-child');
-      arrow.textContent = wrapper.classList.contains('hidden')
-        ? `(${groupRows.length}) ▲`
-        : `(${groupRows.length}) ▼`;
+      const arrow=header.querySelector('span:last-child');
+      arrow.textContent=wrapper.classList.contains('hidden')?`(${groupRows.length}) ▲`:`(${groupRows.length}) ▼`;
     });
   });
 }
 
-// --- Search & Filter ---
+// --- Search / Filter ---
 function applyFilters() {
-  const q = search.value.toLowerCase();
-  const sel = selectionFilter.value;
-  const filtered = allRows.filter(r => {
-    const matchesSearch = r.some(c => c.toLowerCase().includes(q));
-    const matchesSel = !sel || r[groupIndex] === sel;
-    return matchesSearch && matchesSel;
-  });
+  const q=search.value.toLowerCase();
+  const sel=selectionFilter.value;
+  const filtered = allRows.filter(r=> r.some(c=>c.toLowerCase().includes(q)) && (!sel || r[groupIndex]===sel));
   renderGroups(filtered);
 }
 search.addEventListener('input', applyFilters);
 selectionFilter.addEventListener('change', applyFilters);
 
-// --- Export visible ---
-exportBtn.addEventListener('click', () => {
-  const rows = [headers.join(',')];
-  container.querySelectorAll('section').forEach(section => {
+// --- Export CSV ---
+exportBtn.addEventListener('click',()=>{
+  const rows=[headers.join(',')];
+  container.querySelectorAll('section').forEach(section=>{
     const wrapper = section.querySelector('.group-content');
-    if (wrapper.classList.contains('hidden')) return;
-    wrapper.querySelectorAll('tbody tr').forEach(tr => {
-      const cells = Array.from(tr.children).map(td => td.textContent);
+    if(wrapper.classList.contains('hidden')) return;
+    wrapper.querySelectorAll('tbody tr').forEach(tr=>{
+      const cells=Array.from(tr.children).map(td=>td.textContent);
       rows.push(cells.join(','));
     });
   });
- 
+  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const link=document.createElement('a');
+  link.href=URL.createObjectURL(blob);
+  link.download='filtered_data.csv';
+  link.click();
+});
+
+// --- Expand/Collapse All ---
+toggleGroupsBtn.addEventListener('click',()=>{
+  const allGroups=container.querySelectorAll('.group-content');
+  const anyOpen=Array.from(allGroups).some(g=>!g.classList.contains('hidden'));
+  allGroups.forEach(groupContent=>{
+    const header=groupContent.parentElement.querySelector('.group-header span:last-child');
+    const count=groupContent.querySelectorAll('tbody tr').length;
+    if(anyOpen){ groupContent.classList.add('hidden'); header.textContent=`(${count}) ▲`; }
+    else { groupContent.classList.remove('hidden'); header.textContent=`(${count}) ▼`; }
+  });
+  toggleGroupsBtn.textContent = anyOpen?'Expand All':'Collapse All';
+});
+
+// --- Generate PDF ---
+pdfBtn.addEventListener('click', async ()=>{
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p','pt','a4');
+  const pageHeight = doc.internal.pageSize.height;
+  let yOffset = 0;
+
+  const sections = container.querySelectorAll('section');
+  for(let section of sections){
+    const canvas = await html2canvas(section, { scale:2 });
+    const imgData = canvas.toDataURL('image/png');
+    const imgProps = doc.getImageProperties(imgData);
+    const pdfWidth = doc.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    if(yOffset + pdfHeight > pageHeight){
+      doc.addPage();
+      yOffset = 0;
+    }
+    doc.addImage(imgData,'PNG',0,yOffset,pdfWidth,pdfHeight);
+    yOffset += pdfHeight;
+  }
+  doc.save('TeTaiHouTeams.pdf');
+});
+</script>
+</body>
+</html>
