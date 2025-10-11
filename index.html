@@ -5,126 +5,126 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Te Tai Hou Teams - 2025</title>
 <style>
-  :root {
-    --primary: #1E40AF;
-    --accent: #FBBF24;
-    --light-bg: #F9FAFB;
-    --border: #E5E7EB;
-    --text-dark: #111827;
-  }
+:root {
+  --primary: #1E40AF;
+  --accent: #FBBF24;
+  --light-bg: #F9FAFB;
+  --border: #E5E7EB;
+  --text-dark: #111827;
+}
 
-  body {
-    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-    background: var(--light-bg);
-    color: var(--text-dark);
-    margin: 30px;
-  }
+body {
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background: var(--light-bg);
+  color: var(--text-dark);
+  margin: 30px;
+}
 
-  header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-  }
+header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
 
-  header h1 {
-    margin: 0;
-    font-size: 32px;
-    color: var(--primary);
-  }
+header h1 {
+  margin: 0;
+  font-size: 32px;
+  color: var(--primary);
+}
 
-  header img {
-    height: 60px;
-  }
+header img {
+  height: 60px;
+}
 
-  hr {
-    border: none;
-    border-top: 3px solid var(--primary);
-    margin-bottom: 30px;
-  }
+hr {
+  border: none;
+  border-top: 3px solid var(--primary);
+  margin-bottom: 30px;
+}
 
-  input, select, button {
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-right: 10px;
-    font-size: 15px;
-  }
+input, select, button {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-right: 10px;
+  font-size: 15px;
+}
 
-  input:focus, select:focus {
-    border-color: var(--primary);
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2);
-  }
+input:focus, select:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2);
+}
 
-  button {
-    background: var(--primary);
-    color: white;
-    cursor: pointer;
-    border: none;
-    transition: background 0.2s ease-in-out;
-  }
+button {
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s ease-in-out;
+}
 
-  button:hover {
-    background: #1E3A8A;
-  }
+button:hover {
+  background: #1E3A8A;
+}
 
-  section {
-    background: white;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 30px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  }
+section {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
 
-  h2 {
-    margin-top: 0;
-    background: var(--primary);
-    color: white;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 20px;
-  }
+h2 {
+  margin-top: 0;
+  background: var(--primary);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 20px;
+}
 
-  .table-wrapper {
-    overflow-x: auto;
-    margin-top: 10px;
-  }
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 10px;
+}
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: auto;
-    min-width: max-content;
-  }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  min-width: max-content;
+}
 
-  th, td {
-    border-bottom: 1px solid var(--border);
-    padding: 8px 10px;
-    text-align: left;
-    white-space: nowrap;
-  }
+th, td {
+  border-bottom: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
 
-  th {
-    background: #F3F4F6;
-    font-weight: 600;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    cursor: pointer;
-  }
+th {
+  background: #F3F4F6;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  cursor: pointer;
+}
 
-  th.sort-asc::after {
-    content: " ▲";
-  }
+th.sort-asc::after {
+  content: " ▲";
+}
 
-  th.sort-desc::after {
-    content: " ▼";
-  }
+th.sort-desc::after {
+  content: " ▼";
+}
 
-  tr:hover td {
-    background: #F9FAFB;
-  }
+tr:hover td {
+  background: #F9FAFB;
+}
 </style>
 </head>
 <body>
@@ -172,13 +172,14 @@ fetch('data.csv')
     const lines = text.trim().split('\n').map(l => l.split(','));
     headers = lines[0].map(h => h.trim());
     indicativeIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
+    // Skip rows with empty Indicative Selection
     allRows = lines.slice(1).filter(r => r[indicativeIndex]?.trim() !== '');
     populateDropdown();
     renderGroups(allRows);
   });
 
 function populateDropdown() {
-  const unique = [...new Set(allRows.map(r => r[indicativeIndex]))];
+  const unique = [...new Set(allRows.map(r => r[indicativeIndex].trim()))];
   const ordered = groupOrder.concat(unique.filter(v => !groupOrder.includes(v)));
   ordered.forEach(v => {
     const opt = document.createElement('option');
@@ -190,14 +191,32 @@ function populateDropdown() {
 
 function renderGroups(rows) {
   container.innerHTML = '';
-  const groups = groupBy(rows, indicativeIndex);
+
+  // Build groups with trimmed keys
+  const groups = rows.reduce((acc,row) => {
+    const key = row[indicativeIndex].trim();
+    if(!acc[key]) acc[key] = [];
+    acc[key].push(row);
+    return acc;
+  }, {});
+
   const filterVal = selectionFilter.value;
-  const orderedKeys = groupOrder.concat(Object.keys(groups).filter(k => !groupOrder.includes(k)));
-  const visibleKeys = filterVal ? [filterVal] : orderedKeys;
+
+  // Combine groupOrder + remaining groups
+  const allGroupKeys = Object.keys(groups);
+  let visibleKeys;
+  if(filterVal) {
+    visibleKeys = [filterVal];
+  } else {
+    visibleKeys = [
+      ...groupOrder.filter(g => allGroupKeys.includes(g)),
+      ...allGroupKeys.filter(k => !groupOrder.includes(k))
+    ];
+  }
 
   visibleKeys.forEach(groupName => {
     const groupRows = groups[groupName];
-    if (!groupRows || groupRows.length === 0) return;
+    if(!groupRows || groupRows.length === 0) return;
 
     const section = document.createElement('section');
     const title = document.createElement('h2');
@@ -236,13 +255,22 @@ function renderGroups(rows) {
   });
 }
 
-function groupBy(arr, index) {
-  return arr.reduce((acc, row) => {
-    const key = row[index];
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(row);
-    return acc;
-  }, {});
+function sortTable(table, colIndex) {
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const th = table.querySelectorAll('th')[colIndex];
+  const asc = !th.classList.contains('sort-asc');
+
+  rows.sort((a,b) => {
+    const aText = a.children[colIndex].textContent.trim().toLowerCase();
+    const bText = b.children[colIndex].textContent.trim().toLowerCase();
+    if(!isNaN(aText) && !isNaN(bText)) return asc ? aText - bText : bText - aText;
+    return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+  });
+
+  rows.forEach(r => tbody.appendChild(r));
+  table.querySelectorAll('th').forEach(h => h.classList.remove('sort-asc','sort-desc'));
+  th.classList.toggle(asc ? 'sort-asc' : 'sort-desc');
 }
 
 function applyFilters() {
@@ -273,25 +301,6 @@ exportBtn.addEventListener('click', () => {
   link.download = 'filtered_data.csv';
   link.click();
 });
-
-// Sort table function
-function sortTable(table, colIndex) {
-  const tbody = table.querySelector('tbody');
-  const rows = Array.from(tbody.querySelectorAll('tr'));
-  const th = table.querySelectorAll('th')[colIndex];
-  const asc = !th.classList.contains('sort-asc');
-
-  rows.sort((a,b) => {
-    const aText = a.children[colIndex].textContent.trim().toLowerCase();
-    const bText = b.children[colIndex].textContent.trim().toLowerCase();
-    if(!isNaN(aText) && !isNaN(bText)) return asc ? aText - bText : bText - aText;
-    return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
-  });
-
-  rows.forEach(r => tbody.appendChild(r));
-  table.querySelectorAll('th').forEach(h => h.classList.remove('sort-asc','sort-desc'));
-  th.classList.toggle(asc ? 'sort-asc' : 'sort-desc');
-}
 </script>
 
 </body>
