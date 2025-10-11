@@ -20,7 +20,7 @@ body {
 /* --- Page wrapper centered --- */
 #page-wrapper {
   width: 100%;
-  max-width: 40%;
+  max-width: 30%;
   min-width: 320px;
 }
 
@@ -161,7 +161,6 @@ th::after {
     <img src="images/logo.png" alt="Porirua Heat Logo">
   </a>
   <h1>CLUB REGISTRATIONS 2025 - TERM 4</h1>
-
 </header>
 
 <div class="controls">
@@ -174,13 +173,12 @@ th::after {
   <button id="pdfBtn">Generate PDF</button>
 </div>
 
-  <!-- Hyperlink under heading -->
-  <div style="margin-top: 6px;">
-    <a href="https://limonza.github.io/te-tai-hou-teams-2025" target="_blank" style="font-size: 1em; color: #2b6cb0; text-decoration: underline;">
-      Te Tai Hou Teams
-    </a>
-  </div>
-  
+<div style="margin-top: 6px;">
+  <a href="https://limonza.github.io/te-tai-hou-teams-2025" target="_blank" style="font-size: 1em; color: #2b6cb0; text-decoration: underline;">
+    Te Tai Hou Teams
+  </a>
+</div>
+
 <div id="table-container"></div>
 </div>
 
@@ -201,7 +199,6 @@ let allRows = [];
 let groupIndex = 1; // Group column
 let nameIndex = 0;  // Name column
 let leagueIndex = 2; // League column
-
 const customGroupOrder = ["Group1", "Group2", "Group3", "Group4"];
 
 // --- Load CSV ---
@@ -250,7 +247,7 @@ function renderGroups(rows) {
     if (!groupRows?.length) return;
 
     // Sort rows by Name
-    groupRows.sort((a, b) => a[nameIndex].localeCompare(b[nameIndex]));
+    groupRows.sort((a,b) => a[nameIndex].localeCompare(b[nameIndex]));
 
     const section = document.createElement('section');
     const header = document.createElement('div');
@@ -265,10 +262,13 @@ function renderGroups(rows) {
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
 
+    // Build headers skipping Group column
     headers.forEach((h, i) => {
-      const th = document.createElement('th');
-      th.textContent = h;
-      headerRow.appendChild(th);
+      if(i !== groupIndex){
+        const th = document.createElement('th');
+        th.textContent = h;
+        headerRow.appendChild(th);
+      }
     });
     thead.appendChild(headerRow);
     table.appendChild(thead);
@@ -277,10 +277,12 @@ function renderGroups(rows) {
     groupRows.forEach(r => {
       const tr = document.createElement('tr');
       r.forEach((c, i) => {
-        const td = document.createElement('td');
-        td.textContent = c;
-        td.setAttribute('data-label', headers[i]);
-        tr.appendChild(td);
+        if(i !== groupIndex){
+          const td = document.createElement('td');
+          td.textContent = c;
+          td.setAttribute('data-label', headers[i]);
+          tr.appendChild(td);
+        }
       });
       tbody.appendChild(tr);
     });
@@ -290,7 +292,6 @@ function renderGroups(rows) {
     section.appendChild(wrapper);
     container.appendChild(section);
 
-    // Toggle individual group
     header.addEventListener('click', () => {
       wrapper.classList.toggle('hidden');
       const arrow = header.querySelector('span:last-child');
@@ -318,16 +319,17 @@ selectionFilter.addEventListener('change', applyFilters);
 // --- Export CSV ---
 exportBtn.addEventListener('click', () => {
   const rows = [];
-  rows.push(headers.join(','));
+  const headersNoGroup = headers.filter((_,i)=>i!==groupIndex);
+  rows.push(headersNoGroup.join(','));
   container.querySelectorAll('section').forEach(section => {
     const wrapper = section.querySelector('.group-content');
-    if (wrapper.classList.contains('hidden')) return;
+    if(wrapper.classList.contains('hidden')) return;
     wrapper.querySelectorAll('tbody tr').forEach(tr => {
       const cells = Array.from(tr.children).map(td => td.textContent);
       rows.push(cells.join(','));
     });
   });
-  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = 'filtered_data.csv';
@@ -343,7 +345,7 @@ toggleGroupsBtn.addEventListener('click', () => {
     const section = groupContent.parentElement;
     const header = section.querySelector('.group-header span:last-child');
     const count = groupContent.querySelectorAll('tbody tr').length;
-    if (anyOpen) {
+    if(anyOpen){
       groupContent.classList.add('hidden');
       header.textContent = `(${count}) ▲`;
     } else {
@@ -352,20 +354,25 @@ toggleGroupsBtn.addEventListener('click', () => {
     }
   });
 
-  toggleGroupsBtn.textContent = anyOpen ? 'Expand All' : 'Collapse All';
+  toggleGroupsBtn.textContent = anyOpen ? 'Expand All':'Collapse All';
 });
 
 // --- Generate PDF ---
 pdfBtn.addEventListener('click', () => {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p', 'pt', 'a4');
-  const sections = container.querySelectorAll('section');
+  const doc = new jsPDF('p','pt','a4');
+  let startY = 40;
 
-  sections.forEach((section, index) => {
+  const sections = container.querySelectorAll('section');
+  sections.forEach(section => {
     const groupTitle = section.querySelector('.group-header span:first-child').textContent;
 
-    const headers = [];
-    section.querySelectorAll('thead th').forEach(th => headers.push(th.textContent));
+    doc.setFontSize(12);
+    doc.text(groupTitle, 40, startY);
+
+    // Headers skipping Group
+    const headersNoGroup = [];
+    section.querySelectorAll('thead th').forEach(th => headersNoGroup.push(th.textContent));
 
     const body = [];
     section.querySelectorAll('tbody tr').forEach(tr => {
@@ -374,19 +381,20 @@ pdfBtn.addEventListener('click', () => {
       body.push(row);
     });
 
-    // Add group title
-    doc.setFontSize(12);
-    doc.text(groupTitle, 40, doc.autoTable.previous.finalY ? doc.autoTable.previous.finalY + 20 : 40);
-
     doc.autoTable({
-      head: [headers],
+      head: [headersNoGroup],
       body: body,
-      startY: doc.autoTable.previous.finalY ? doc.autoTable.previous.finalY + 30 : 50,
+      startY: startY + 20,
       theme: 'grid',
       headStyles: { fillColor: [239, 68, 68] },
       styles: { fontSize: 10 },
       margin: { left: 20, right: 20 },
-      showHead: 'everyPage'
+      showHead: 'everyPage',
+      columnStyles: {
+        0: { cellWidth: 180 }, // Name
+        1: { cellWidth: 180 }  // League
+      },
+      didDrawPage: (data) => { startY = data.cursor.y + 20; }
     });
   });
 
