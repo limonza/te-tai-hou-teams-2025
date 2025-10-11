@@ -5,25 +5,130 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Te Tai Hou Teams - 2025</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #fafafa; color: #333; }
-    header { display: flex; justify-content: space-between; align-items: center; }
-    header h1 { margin: 0; text-align: center; flex: 1; font-size: 28px; }
-    header img { height: 70px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f0f0f0; cursor: pointer; }
-    tr:hover { background: #f9f9f9; }
-    #search, #selectionFilter { padding: 8px; margin: 10px 5px 15px 0; }
-    section { margin-bottom: 40px; }
-    h2 { background: #333; color: white; padding: 8px; border-radius: 4px; }
-    button { padding: 6px 12px; margin-top: 10px; }
+    :root {
+      --primary: #1E40AF;
+      --accent: #FBBF24;
+      --light-bg: #F9FAFB;
+      --border: #E5E7EB;
+      --text-dark: #111827;
+      --text-light: #6B7280;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      background: var(--light-bg);
+      color: var(--text-dark);
+      margin: 0;
+      padding: 30px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    header h1 {
+      margin: 0;
+      flex: 1;
+      text-align: center;
+      font-size: 32px;
+      color: var(--primary);
+      letter-spacing: 0.5px;
+    }
+
+    header img {
+      height: 60px;
+    }
+
+    hr {
+      border: none;
+      border-top: 3px solid var(--primary);
+      margin: 20px 0 30px;
+    }
+
+    input, select, button {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-right: 10px;
+      font-size: 15px;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2);
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background: #1E3A8A;
+    }
+
+    section {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      margin-top: 0;
+      background: var(--primary);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 20px;
+      letter-spacing: 0.3px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+      min-width: max-content;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #F3F4F6;
+      color: var(--text-dark);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    tr:hover td {
+      background: #F9FAFB;
+    }
   </style>
 </head>
 <body>
   <header>
     <img src="images/logo.png" alt="Te Tai Hou Logo">
     <h1>Te Tai Hou Teams - 2025</h1>
-    <a href="https://www.poriruaheatbasketballclub.org" target="_blank" title="Visit Porirua Heat Basketball Club">
+    <a href="https://www.poriruaheatbasketballclub.org" target="_blank">
       <img src="images/logo.png" alt="Porirua Heat Logo">
     </a>
   </header>
@@ -35,10 +140,10 @@
     <select id="selectionFilter">
       <option value="">All</option>
     </select>
+    <button id="export">Export Filtered Data</button>
   </div>
 
   <div id="table-container"></div>
-  <button id="export">Export Filtered Data</button>
 
   <script>
     const search = document.getElementById('search');
@@ -50,7 +155,15 @@
     let allRows = [];
     let indicativeIndex = -1;
 
-    fetch('data.csv')
+    const groupOrder = [
+      "10U Dev", "10U Elite",
+      "12U Dev", "12U Elite",
+      "14U Dev Blue", "14U Elite Black", "14U Elite Gold", "14U Dev Red",
+      "16U Dev", "16U Elite",
+      "20U", "Mens", "Womens"
+    ];
+
+    fetch('data/data.csv')
       .then(res => res.text())
       .then(text => {
         const lines = text.trim().split('\n').map(l => l.split(','));
@@ -62,8 +175,9 @@
       });
 
     function populateDropdown() {
-      const unique = [...new Set(allRows.map(r => r[indicativeIndex]))].sort();
-      unique.forEach(v => {
+      const unique = [...new Set(allRows.map(r => r[indicativeIndex]))];
+      const ordered = groupOrder.concat(unique.filter(v => !groupOrder.includes(v)));
+      ordered.forEach(v => {
         const opt = document.createElement('option');
         opt.value = v;
         opt.textContent = v;
@@ -75,14 +189,20 @@
       container.innerHTML = '';
       const groups = groupBy(rows, indicativeIndex);
       const filterVal = selectionFilter.value;
-      const filteredGroups = filterVal ? { [filterVal]: groups[filterVal] } : groups;
+      const orderedKeys = groupOrder.concat(Object.keys(groups).filter(k => !groupOrder.includes(k)));
+      const visibleKeys = filterVal ? [filterVal] : orderedKeys;
 
-      for (const [groupName, groupRows] of Object.entries(filteredGroups)) {
-        if (!groupRows) continue;
+      for (const groupName of visibleKeys) {
+        const groupRows = groups[groupName];
+        if (!groupRows || groupRows.length === 0) continue;
+
         const section = document.createElement('section');
         const title = document.createElement('h2');
         title.textContent = groupName;
         section.appendChild(title);
+
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('table-wrapper');
 
         const table = document.createElement('table');
         const thead = document.createElement('thead');
@@ -106,7 +226,8 @@
           tbody.appendChild(tr);
         });
         table.appendChild(tbody);
-        section.appendChild(table);
+        wrapper.appendChild(table);
+        section.appendChild(wrapper);
         container.appendChild(section);
       }
     }
@@ -137,12 +258,12 @@
     exportBtn.addEventListener('click', () => {
       const rows = [];
       rows.push(headers.join(','));
-      const sections = container.querySelectorAll('section table tbody tr');
-      sections.forEach(tr => {
+      const trs = container.querySelectorAll('section table tbody tr');
+      trs.forEach(tr => {
         const cells = Array.from(tr.children).map(td => td.textContent);
         rows.push(cells.join(','));
       });
-      const blob = new Blob([rows.join('\\n')], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = 'filtered_data.csv';
