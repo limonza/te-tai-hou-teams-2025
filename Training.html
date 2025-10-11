@@ -169,7 +169,7 @@ let allRows = [];
 const groupIndex = 1; // Group column (second column)
 
 // --- Load CSV ---
-fetch('teams.csv')
+fetch('Sunday.csv')
   .then(res => res.text())
   .then(text => {
     const lines = text.trim().split('\n').map(l => l.split(','));
