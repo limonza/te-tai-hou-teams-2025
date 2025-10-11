@@ -65,9 +65,30 @@ header h1 {
   background-color: #2b6cb0;
   color: white;
   cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.9em;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .controls button:hover {
   background-color: #1e4e8c;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.controls button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* --- Button group layout --- */
+.button-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 /* --- Group containers --- */
@@ -92,10 +113,12 @@ section {
 .group-content {
   padding: 0;
   overflow-x: auto;
-  transition: all 0.3s ease;
+  transition: max-height 0.4s ease;
+  max-height: 1000px;
 }
 .group-content.hidden {
-  display: none;
+  max-height: 0;
+  overflow: hidden;
 }
 
 /* --- Table --- */
@@ -168,7 +191,11 @@ th::after {
   <select id="selectionFilter">
     <option value="">All Teams</option>
   </select>
-  <button id="export">Export CSV</button>
+  <div class="button-group">
+    <button id="expandAll">⬇️ Expand All</button>
+    <button id="collapseAll">⬆️ Collapse All</button>
+    <button id="export">💾 Export CSV</button>
+  </div>
 </div>
 
 <div id="table-container"></div>
@@ -255,7 +282,7 @@ function renderGroups(rows) {
 
     // Build headers excluding Indicative Selection
     headers.forEach((h, i) => {
-      if (i === indicativeIndex) return; // skip hidden column
+      if (i === indicativeIndex) return;
       const th = document.createElement('th');
       th.textContent = h;
       headerRow.appendChild(th);
@@ -267,7 +294,7 @@ function renderGroups(rows) {
     groupRows.forEach(r => {
       const tr = document.createElement('tr');
       r.forEach((c, i) => {
-        if (i === indicativeIndex) return; // skip hidden column
+        if (i === indicativeIndex) return;
         const td = document.createElement('td');
         td.textContent = c;
         td.setAttribute('data-label', headers[i]);
@@ -325,7 +352,27 @@ exportBtn.addEventListener('click', () => {
   link.download = 'filtered_data.csv';
   link.click();
 });
+
+// --- Expand / Collapse All ---
+document.getElementById('expandAll').addEventListener('click', () => {
+  document.querySelectorAll('.group-content').forEach(wrapper => {
+    wrapper.classList.remove('hidden');
+  });
+  document.querySelectorAll('.group-header').forEach(header => {
+    const count = header.textContent.match(/\((\d+)\)/)?.[1] || '';
+    header.querySelector('span:last-child').textContent = `(${count}) ▼`;
+  });
+});
+
+document.getElementById('collapseAll').addEventListener('click', () => {
+  document.querySelectorAll('.group-content').forEach(wrapper => {
+    wrapper.classList.add('hidden');
+  });
+  document.querySelectorAll('.group-header').forEach(header => {
+    const count = header.textContent.match(/\((\d+)\)/)?.[1] || '';
+    header.querySelector('span:last-child').textContent = `(${count}) ▲`;
+  });
+});
 </script>
 </body>
 </html>
-
