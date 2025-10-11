@@ -55,6 +55,10 @@
   let sortColumn = null;
   let sortAsc = true;
 
+  // Custom group order
+  const customGroupOrder = ['10U Dev','10U Elite','12U Dev','12U Elite','14U Dev Blue','14U Elite Black','14U Elite Gold','14U Dev Red','16U Dev','16U Elite','20U','Mens','Womens'];
+  const groupState = {}; // Tracks collapsed/expanded state by group
+
   // Load CSV
   const res = await fetch('data.csv');
   const text = await res.text();
@@ -75,6 +79,7 @@
   // Indexes for filters
   const teamIndex = headers.findIndex(h => h.toLowerCase() === 'eligible team');
   const groupIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
+  const firstNameIndex = headers.findIndex(h => h.toLowerCase() === 'first name');
 
   // Populate dropdown
   const uniqueTeams = [...new Set(allRows.map(r => r[teamIndex]))].sort();
@@ -98,7 +103,8 @@
     const filtered = allRows.filter(row => {
       const matchesSearch = row.some(c => c.toLowerCase().includes(q));
       const matchesTeam = !selectedTeam || row[teamIndex] === selectedTeam;
-      return matchesSearch && matchesTeam;
+      const hasGroup = row[groupIndex].trim() !== ''; // Exclude rows without group
+      return matchesSearch && matchesTeam && hasGroup;
     });
     renderGroupedRows(filtered);
   }
@@ -112,17 +118,34 @@
       grouped[key].push(r);
     });
 
-    Object.keys(grouped).forEach(group => {
-      // Group header row
+    // Sort groups according to custom order
+    const sortedGroups = Object.keys(grouped).sort((a,b) => {
+      const idxA = customGroupOrder.indexOf(a);
+      const idxB = customGroupOrder.indexOf(b);
+      if(idxA === -1 && idxB === -1) return a.localeCompare(b);
+      if(idxA === -1) return 1;
+      if(idxB === -1) return -1;
+      return idxA - idxB;
+    });
+
+    sortedGroups.forEach(group => {
+      // Sort rows in the group by First Name
+      grouped[group].sort((a,b) => a[firstNameIndex].localeCompare(b[firstNameIndex]));
+
+      // Render group header
       const trGroup = document.createElement('tr');
       trGroup.className = 'group-header';
       const tdGroup = document.createElement('td');
       tdGroup.colSpan = headers.length;
-      tdGroup.textContent = '▼ ' + group; // default expanded
+
+      // Default expanded if state not set
+      if (!(group in groupState)) groupState[group] = false; // false = expanded
+      tdGroup.textContent = (groupState[group] ? '▶ ' : '▼ ') + group;
+
       trGroup.appendChild(tdGroup);
       tbody.appendChild(trGroup);
 
-      // Rows in the group
+      // Render rows
       const groupRows = grouped[group].map(row => {
         const tr = document.createElement('tr');
         row.forEach(cell => {
@@ -130,16 +153,17 @@
           td.textContent = cell;
           tr.appendChild(td);
         });
+        // Hide rows if collapsed
+        if (groupState[group]) tr.style.display = 'none';
         return tr;
       });
       groupRows.forEach(tr => tbody.appendChild(tr));
 
-      // Collapsible functionality
-      let collapsed = false;
+      // Collapsible toggle
       trGroup.addEventListener('click', () => {
-        collapsed = !collapsed;
-        groupRows.forEach(tr => tr.style.display = collapsed ? 'none' : '');
-        tdGroup.textContent = (collapsed ? '▶ ' : '▼ ') + group;
+        groupState[group] = !groupState[group]; // toggle state
+        groupRows.forEach(tr => tr.style.display = groupState[group] ? 'none' : '');
+        tdGroup.textContent = (groupState[group] ? '▶ ' : '▼ ') + group;
       });
     });
   }
@@ -155,7 +179,7 @@
       if(valA > valB) return sortAsc ? 1 : -1;
       return 0;
     });
-    applyFilters(); // re-apply filters so grouping updates
+    applyFilters(); // Re-render with new sort
   }
 
   exportBtn.addEventListener('click', () => {
@@ -177,4 +201,3 @@
 
 </body>
 </html>
-
