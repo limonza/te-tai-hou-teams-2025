@@ -1,191 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hoop Nations – 2025</title>
-
-<style>
-/* --- General page setup --- */
-body {
-  font-family: "Segoe UI", Roboto, sans-serif;
-  background-color: #f9fafb;
-  margin: 0;
-  padding: 20px;
-  color: #333;
-  display: flex;
-  justify-content: center;
-}
-
-/* --- Page wrapper centered --- */
-#page-wrapper {
-  width: 100%;
-  max-width: 40%;
-  min-width: 320px;
-}
-
-/* --- Header --- */
-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-header img {
-  height: 60px;
-  border-radius: 50%;
-}
-header h1 {
-  font-size: 1.8em;
-  margin: 0;
-  color: #1a365d;
-}
-
-/* --- Controls --- */
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-.controls input, .controls select, .controls button {
-  padding: 6px 10px;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  font-size: 0.95em;
-}
-.controls input:focus, .controls select:focus {
-  outline: none;
-  border-color: #2b6cb0;
-  box-shadow: 0 0 4px rgba(43,108,176,0.3);
-}
-.controls button {
-  background-color: #2b6cb0;
-  color: white;
-  cursor: pointer;
-}
-.controls button:hover {
-  background-color: #1e4e8c;
-}
-
-/* --- Group containers --- */
-section {
-  margin-bottom: 1rem;
-  border-radius: 0.75rem;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  overflow: hidden;
-}
-.group-header {
-  font-weight: 600;
-  font-size: 1.1rem;
-  padding: 0.6rem 1rem;
-  background: linear-gradient(to right, #ef4444, #f97316);
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-.group-content {
-  padding: 0;
-  overflow-x: auto;
-  transition: all 0.3s ease;
-}
-.group-content.hidden {
-  display: none;
-}
-
-/* --- Table --- */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-  table-layout: fixed; /* Evenly distributed columns */
-}
-thead th {
-  background: #f3f4f6;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  padding: 0.5rem;
-  text-align: left;
-}
-tbody td {
-  border-top: 1px solid #e5e7eb;
-  padding: 0.4rem 0.5rem;
-  word-wrap: break-word;
-}
-tbody tr:hover {
-  background: #f9fafb;
-}
-th::after {
-  content: ''; /* Remove sort arrows */
-}
-
-/* --- Responsive --- */
-@media (max-width: 768px) {
-  #page-wrapper {
-    max-width: 100%;
-  }
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
-  thead {
-    display: none;
-  }
-  tr {
-    margin-bottom: 12px;
-    border-bottom: 1px solid #ddd;
-  }
-  td {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px;
-  }
-  td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #2b6cb0;
-  }
-}
-</style>
-</head>
-
-<body>
-<div id="page-wrapper">
-<header style="text-align: center; margin-bottom: 24px;">
-  <!-- Logo -->
-  <a href="https://www.poriruaheatbasketball.org" target="_blank">
-    <img src="images/logo.png" alt="Porirua Heat Logo" style="height: 60px; border-radius: 50%; margin-bottom: 12px;">
-  </a>
-
-  <!-- Main Heading -->
-  <h1 style="font-size: 1.8em; margin: 0; color: #1a365d;">HOOP NATIONS CLASSIC - 2025 TEAMS</h1>
-
-</header>
-
-<div class="controls">
-  <input id="search" type="text" placeholder="Search...">
-  <select id="selectionFilter">
-    <option value="">All Teams</option>
-  </select>
-  <button id="export">Export CSV</button>
-  <button id="toggleGroups">Collapse All</button>
-</div>
-
-<!-- Hyperlink under heading -->
-  <div style="margin-top: 6px;">
-    <a href="https://limonza.github.io/te-tai-hou-teams-2025/Training.html" style="font-size: 1em; color: #2b6cb0; text-decoration: underline;">
-      Confirmed Club Registrations
-    </a>
-  </div>
-
-<div id="table-container"></div>
-</div>
-
 <script>
 const search = document.getElementById('search');
 const selectionFilter = document.getElementById('selectionFilter');
@@ -195,24 +7,18 @@ const toggleGroupsBtn = document.getElementById('toggleGroups');
 
 let headers = [];
 let allRows = [];
-let indicativeIndex = -1;
 
 const groupOrder = [
-  "14U Dev","16U Dev","16U Elite","18U","Mens Social"
+  "14U Dev", "16U Dev", "16U Elite", "18U", "Mens Social"
 ];
 
 // --- Load CSV ---
 fetch('HNC.csv')
   .then(res => res.text())
   .then(text => {
-    const lines = text.trim().split('\n').map(l => l.split(','));
-    headers = lines[0].map(h => h.trim());
-    indicativeIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
-
-    // Filter out rows with no Indicative Selection
-    allRows = lines.slice(1)
-      .map(r => r.map(c => c.trim()))
-      .filter(r => r[indicativeIndex] && r[indicativeIndex] !== '');
+    const lines = text.trim().split('\n').map(l => l.split(',').map(c => c.trim()));
+    headers = lines[0]; // [ "Name", "Team" ]
+    allRows = lines.slice(1);
 
     populateDropdown();
     renderGroups(allRows);
@@ -220,24 +26,25 @@ fetch('HNC.csv')
 
 // --- Populate dropdown ---
 function populateDropdown() {
-  const unique = [...new Set(allRows.map(r => r[indicativeIndex]))];
-  const ordered = groupOrder.concat(unique.filter(v => !groupOrder.includes(v)));
-  ordered.forEach(v => {
+  const uniqueTeams = [...new Set(allRows.map(r => r[1]))]; // team = 2nd column
+  const ordered = groupOrder.concat(uniqueTeams.filter(v => !groupOrder.includes(v)));
+
+  ordered.forEach(team => {
     const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = v;
+    opt.value = team;
+    opt.textContent = team;
     selectionFilter.appendChild(opt);
   });
 }
 
-// --- Render groups ---
+// --- Render grouped tables ---
 function renderGroups(rows) {
   container.innerHTML = '';
 
   const groups = rows.reduce((acc, row) => {
-    const key = row[indicativeIndex]; // Group by Indicative Selection
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(row);
+    const team = row[1] || 'Unassigned'; // group by Team column
+    if (!acc[team]) acc[team] = [];
+    acc[team].push(row);
     return acc;
   }, {});
 
@@ -247,26 +54,27 @@ function renderGroups(rows) {
     ? [filterVal]
     : [...groupOrder.filter(g => allGroupKeys.includes(g)), ...allGroupKeys.filter(k => !groupOrder.includes(k))];
 
-  visibleKeys.forEach(groupName => {
-    const groupRows = groups[groupName];
-    if (!groupRows?.length) return;
+  visibleKeys.forEach(teamName => {
+    const teamRows = groups[teamName];
+    if (!teamRows?.length) return;
 
     const section = document.createElement('section');
+
+    // --- Group header ---
     const header = document.createElement('div');
     header.className = 'group-header';
-    header.innerHTML = `<span>${groupName}</span><span>(${groupRows.length}) ▼</span>`;
+    header.innerHTML = `<span>${teamName}</span><span>(${teamRows.length}) ▼</span>`;
     section.appendChild(header);
 
+    // --- Table ---
     const wrapper = document.createElement('div');
     wrapper.className = 'group-content';
-
     const table = document.createElement('table');
+
+    // Table header
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
-
-    // Build headers excluding Indicative Selection
-    headers.forEach((h, i) => {
-      if (i === indicativeIndex) return; // skip hidden column
+    headers.forEach(h => {
       const th = document.createElement('th');
       th.textContent = h;
       headerRow.appendChild(th);
@@ -274,11 +82,11 @@ function renderGroups(rows) {
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
+    // Table body
     const tbody = document.createElement('tbody');
-    groupRows.forEach(r => {
+    teamRows.forEach(r => {
       const tr = document.createElement('tr');
       r.forEach((c, i) => {
-        if (i === indicativeIndex) return; // skip hidden column
         const td = document.createElement('td');
         td.textContent = c;
         td.setAttribute('data-label', headers[i]);
@@ -292,13 +100,13 @@ function renderGroups(rows) {
     section.appendChild(wrapper);
     container.appendChild(section);
 
-    // Toggle individual group
+    // --- Toggle each group ---
     header.addEventListener('click', () => {
       wrapper.classList.toggle('hidden');
       const arrow = header.querySelector('span:last-child');
       arrow.textContent = wrapper.classList.contains('hidden')
-        ? `(${groupRows.length}) ▲`
-        : `(${groupRows.length}) ▼`;
+        ? `(${teamRows.length}) ▲`
+        : `(${teamRows.length}) ▼`;
     });
   });
 }
@@ -309,7 +117,7 @@ function applyFilters() {
   const sel = selectionFilter.value;
   const filtered = allRows.filter(r => {
     const matchesSearch = r.some(c => c.toLowerCase().includes(q));
-    const matchesSel = !sel || r[indicativeIndex] === sel;
+    const matchesSel = !sel || r[1] === sel;
     return matchesSearch && matchesSel;
   });
   renderGroups(filtered);
@@ -321,8 +129,7 @@ selectionFilter.addEventListener('change', applyFilters);
 // --- Export visible ---
 exportBtn.addEventListener('click', () => {
   const rows = [];
-  const visibleHeaders = headers.filter((_, i) => i !== indicativeIndex);
-  rows.push(visibleHeaders.join(','));
+  rows.push(headers.join(','));
   container.querySelectorAll('section').forEach(section => {
     const wrapper = section.querySelector('.group-content');
     if (wrapper.classList.contains('hidden')) return;
@@ -333,31 +140,4 @@ exportBtn.addEventListener('click', () => {
   });
   const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'filtered_data.csv';
-  link.click();
-});
-
-// --- Expand / Collapse All ---
-toggleGroupsBtn.addEventListener('click', () => {
-  const allGroups = container.querySelectorAll('.group-content');
-  const anyOpen = Array.from(allGroups).some(g => !g.classList.contains('hidden'));
-
-  allGroups.forEach(groupContent => {
-    const section = groupContent.parentElement;
-    const header = section.querySelector('.group-header span:last-child');
-    const count = groupContent.querySelectorAll('tbody tr').length;
-    if (anyOpen) {
-      groupContent.classList.add('hidden');
-      header.textContent = `(${count}) ▲`;
-    } else {
-      groupContent.classList.remove('hidden');
-      header.textContent = `(${count}) ▼`;
-    }
-  });
-
-  toggleGroupsBtn.textContent = anyOpen ? 'Expand All' : 'Collapse All';
-});
-</script>
-</body>
-</html>
+  lin
