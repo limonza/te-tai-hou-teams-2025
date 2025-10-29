@@ -103,7 +103,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
-  table-layout: fixed;
+  table-layout: fixed; /* Evenly distributed columns */
 }
 thead th {
   background: #f3f4f6;
@@ -122,14 +122,28 @@ tbody tr:hover {
   background: #f9fafb;
 }
 th::after {
-  content: '';
+  content: ''; /* Remove sort arrows */
+}
+
+/* --- Widen Email column and prevent wrapping --- */
+td:nth-child(2), th:nth-child(2) {
+  width: 30%;          /* Adjust width if needed */
+  white-space: nowrap; /* Keep on one line */
+  overflow: hidden;     /* Hide overflow */
+  text-overflow: ellipsis; /* Show "..." if too long */
 }
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
-  #page-wrapper { max-width: 100%; }
-  table, thead, tbody, th, td, tr { display: block; }
-  thead { display: none; }
+  #page-wrapper {
+    max-width: 100%;
+  }
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  thead {
+    display: none;
+  }
   tr {
     margin-bottom: 12px;
     border-bottom: 1px solid #ddd;
