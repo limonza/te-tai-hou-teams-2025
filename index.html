@@ -103,7 +103,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
-  table-layout: fixed; /* Evenly distributed columns */
+  table-layout: fixed;
 }
 thead th {
   background: #f3f4f6;
@@ -122,20 +122,14 @@ tbody tr:hover {
   background: #f9fafb;
 }
 th::after {
-  content: ''; /* Remove sort arrows */
+  content: '';
 }
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
-  #page-wrapper {
-    max-width: 100%;
-  }
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
-  thead {
-    display: none;
-  }
+  #page-wrapper { max-width: 100%; }
+  table, thead, tbody, th, td, tr { display: block; }
+  thead { display: none; }
   tr {
     margin-bottom: 12px;
     border-bottom: 1px solid #ddd;
@@ -157,14 +151,10 @@ th::after {
 <body>
 <div id="page-wrapper">
 <header style="text-align: center; margin-bottom: 24px;">
-  <!-- Logo -->
   <a href="https://www.poriruaheatbasketball.org" target="_blank">
     <img src="images/logo.png" alt="Porirua Heat Logo" style="height: 60px; border-radius: 50%; margin-bottom: 12px;">
   </a>
-
-  <!-- Main Heading -->
   <h1 style="font-size: 1.8em; margin: 0; color: #1a365d;">TE TAI HOU TEAMS – 2025 TERM 4</h1>
-
 </header>
 
 <div class="controls">
@@ -176,12 +166,11 @@ th::after {
   <button id="toggleGroups">Collapse All</button>
 </div>
 
-<!-- Hyperlink under heading -->
-  <div style="margin-top: 6px;">
-    <a href="https://limonza.github.io/te-tai-hou-teams-2025/Training.html" style="font-size: 1em; color: #2b6cb0; text-decoration: underline;">
-      Confirmed Club Registrations
-    </a>
-  </div>
+<div style="margin-top: 6px;">
+  <a href="https://limonza.github.io/te-tai-hou-teams-2025/Training.html" style="font-size: 1em; color: #2b6cb0; text-decoration: underline;">
+    Confirmed Club Registrations
+  </a>
+</div>
 
 <div id="table-container"></div>
 </div>
@@ -237,7 +226,7 @@ function renderGroups(rows) {
   container.innerHTML = '';
 
   const groups = rows.reduce((acc, row) => {
-    const key = row[indicativeIndex]; // Group by Indicative Selection
+    const key = row[indicativeIndex];
     if (!acc[key]) acc[key] = [];
     acc[key].push(row);
     return acc;
@@ -268,7 +257,7 @@ function renderGroups(rows) {
 
     // Build headers excluding Indicative Selection
     headers.forEach((h, i) => {
-      if (i === indicativeIndex) return; // skip hidden column
+      if (i === indicativeIndex) return;
       const th = document.createElement('th');
       th.textContent = h;
       headerRow.appendChild(th);
@@ -280,7 +269,7 @@ function renderGroups(rows) {
     groupRows.forEach(r => {
       const tr = document.createElement('tr');
       r.forEach((c, i) => {
-        if (i === indicativeIndex) return; // skip hidden column
+        if (i === indicativeIndex) return;
         const td = document.createElement('td');
         td.textContent = c;
         td.setAttribute('data-label', headers[i]);
@@ -363,12 +352,3 @@ toggleGroupsBtn.addEventListener('click', () => {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
