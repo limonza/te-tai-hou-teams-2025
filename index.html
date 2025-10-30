@@ -1,209 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Te Tai Hou Teams – 2025</title>
-
-<style>
-/* --- General page setup --- */
-body {
-  font-family: "Segoe UI", Roboto, sans-serif;
-  background-color: #f9fafb;
-  margin: 0;
-  padding: 20px;
-  color: #333;
-  display: flex;
-  justify-content: center;
-}
-
-/* --- Page wrapper centered --- */
-#page-wrapper {
-  width: 100%;
-  max-width: 40%;
-  min-width: 320px;
-}
-
-/* --- Header --- */
-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-header img {
-  height: 60px;
-  border-radius: 50%;
-}
-header h1 {
-  font-size: 1.8em;
-  margin: 0;
-  color: #1a365d;
-}
-
-/* --- Controls --- */
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-.controls input, .controls select, .controls button {
-  padding: 6px 10px;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  font-size: 0.95em;
-}
-.controls input:focus, .controls select:focus {
-  outline: none;
-  border-color: #2b6cb0;
-  box-shadow: 0 0 4px rgba(43,108,176,0.3);
-}
-.controls button {
-  background-color: #2b6cb0;
-  color: white;
-  cursor: pointer;
-}
-.controls button:hover {
-  background-color: #1e4e8c;
-}
-
-/* --- Group containers --- */
-section {
-  margin-bottom: 1rem;
-  border-radius: 0.75rem;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  overflow: hidden;
-}
-.group-header {
-  font-weight: 600;
-  font-size: 1.1rem;
-  padding: 0.6rem 1rem;
-  background: linear-gradient(to right, #ef4444, #f97316);
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-.group-content {
-  padding: 0;
-  overflow-x: auto;
-  transition: all 0.3s ease;
-}
-.group-content.hidden {
-  display: none;
-}
-
-/* --- Table --- */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-  table-layout: fixed; /* Evenly distributed columns */
-}
-thead th {
-  background: #f3f4f6;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  padding: 0.5rem;
-  text-align: left;
-}
-tbody td {
-  border-top: 1px solid #e5e7eb;
-  padding: 0.4rem 0.5rem;
-  word-wrap: break-word;
-}
-tbody tr:hover {
-  background: #f9fafb;
-}
-th::after {
-  content: ''; /* Remove sort arrows */
-}
-
-/* === COLUMN WRAPPING RULES === */
-
-/* Prevent wrapping for all columns except the last one (Paid) */
-td:not(:last-child),
-th:not(:last-child) {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Allow wrapping for the Paid column */
-td:last-child,
-th:last-child {
-  white-space: normal;
-}
-
-/* Widen Email column (usually 2nd) */
-td:nth-child(2),
-th:nth-child(2) {
-  width: 30%;
-}
-
-/* --- Responsive --- */
-@media (max-width: 768px) {
-  #page-wrapper {
-    max-width: 100%;
-  }
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
-  thead {
-    display: none;
-  }
-  tr {
-    margin-bottom: 12px;
-    border-bottom: 1px solid #ddd;
-  }
-  td {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px;
-    white-space: normal; /* Allow wrapping on mobile for readability */
-  }
-  td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #2b6cb0;
-  }
-}
-</style>
-</head>
-
-<body>
-<div id="page-wrapper">
-<header style="text-align: center; margin-bottom: 24px;">
-  <a href="https://www.poriruaheatbasketball.org" target="_blank">
-    <img src="images/logo.png" alt="Porirua Heat Logo" style="height: 60px; border-radius: 50%; margin-bottom: 12px;">
-  </a>
-  <h1 style="font-size: 1.8em; margin: 0; color: #1a365d;">TE TAI HOU TEAMS – 2025 TERM 4</h1>
-</header>
-
-<div class="controls">
-  <input id="search" type="text" placeholder="Search...">
-  <select id="selectionFilter">
-    <option value="">All Teams</option>
-  </select>
-  <button id="export">Export CSV</button>
-  <button id="toggleGroups">Collapse All</button>
-</div>
-
-<div style="margin-top: 6px;">
-  <a href="https://limonza.github.io/te-tai-hou-teams-2025/Training.html" style="font-size: 1em; color: #2b6cb0; text-decoration: underline;">
-    Confirmed Club Registrations
-  </a>
-</div>
-
-<div id="table-container"></div>
-</div>
-
 <script>
 const search = document.getElementById('search');
 const selectionFilter = document.getElementById('selectionFilter');
@@ -211,9 +5,29 @@ const container = document.getElementById('table-container');
 const exportBtn = document.getElementById('export');
 const toggleGroupsBtn = document.getElementById('toggleGroups');
 
+// === Add new filters for Cleared and GD Regist ===
+const clearedFilter = document.createElement('select');
+clearedFilter.id = 'clearedFilter';
+clearedFilter.innerHTML = `
+  <option value="">All Cleared</option>
+  <option value="Blank">(Blank)</option>
+`;
+
+const gdFilter = document.createElement('select');
+gdFilter.id = 'gdFilter';
+gdFilter.innerHTML = `
+  <option value="">All GD Regist.</option>
+  <option value="Blank">(Blank)</option>
+`;
+
+document.querySelector('.controls').appendChild(clearedFilter);
+document.querySelector('.controls').appendChild(gdFilter);
+
 let headers = [];
 let allRows = [];
 let indicativeIndex = -1;
+let clearedIndex = -1;
+let gdIndex = -1;
 
 const groupOrder = [
   "10U Dev","10U Elite","12U Dev","12U Elite",
@@ -229,17 +43,30 @@ fetch('teams.csv')
     headers = lines[0].map(h => h.trim());
     indicativeIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
 
-    // Filter out rows with no Indicative Selection
+    // Add "Cleared" and "GD Regist." columns if missing
+    if (!headers.includes("Cleared")) headers.push("Cleared");
+    if (!headers.includes("GD Regist.")) headers.push("GD Regist.");
+
+    clearedIndex = headers.findIndex(h => h === "Cleared");
+    gdIndex = headers.findIndex(h => h === "GD Regist.");
+
+    // Prepare rows and ensure both fields exist
     allRows = lines.slice(1)
-      .map(r => r.map(c => c.trim()))
+      .map(r => {
+        const trimmed = r.map(c => c.trim());
+        // Ensure both Cleared and GD Regist. exist
+        while (trimmed.length < headers.length) trimmed.push("");
+        return trimmed;
+      })
       .filter(r => r[indicativeIndex] && r[indicativeIndex] !== '');
 
-    populateDropdown();
+    populateDropdowns();
     renderGroups(allRows);
   });
 
-// --- Populate dropdown ---
-function populateDropdown() {
+// --- Populate dropdowns ---
+function populateDropdowns() {
+  // Indicative selection dropdown
   const unique = [...new Set(allRows.map(r => r[indicativeIndex]))];
   const ordered = groupOrder.concat(unique.filter(v => !groupOrder.includes(v)));
   ordered.forEach(v => {
@@ -248,9 +75,27 @@ function populateDropdown() {
     opt.textContent = v;
     selectionFilter.appendChild(opt);
   });
+
+  // Cleared dropdown
+  const clearedValues = [...new Set(allRows.map(r => r[clearedIndex]).filter(v => v))];
+  clearedValues.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    clearedFilter.appendChild(opt);
+  });
+
+  // GD Regist. dropdown
+  const gdValues = [...new Set(allRows.map(r => r[gdIndex]).filter(v => v))];
+  gdValues.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    gdFilter.appendChild(opt);
+  });
 }
 
-// --- Render groups ---
+// --- Render grouped tables ---
 function renderGroups(rows) {
   container.innerHTML = '';
 
@@ -285,98 +130,3 @@ function renderGroups(rows) {
     const headerRow = document.createElement('tr');
 
     headers.forEach((h, i) => {
-      if (i === indicativeIndex) return;
-      const th = document.createElement('th');
-      th.textContent = h;
-      headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    const tbody = document.createElement('tbody');
-    groupRows.forEach(r => {
-      const tr = document.createElement('tr');
-      r.forEach((c, i) => {
-        if (i === indicativeIndex) return;
-        const td = document.createElement('td');
-        td.textContent = c;
-        td.setAttribute('data-label', headers[i]);
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(tbody);
-    wrapper.appendChild(table);
-    section.appendChild(wrapper);
-    container.appendChild(section);
-
-    // Toggle individual group
-    header.addEventListener('click', () => {
-      wrapper.classList.toggle('hidden');
-      const arrow = header.querySelector('span:last-child');
-      arrow.textContent = wrapper.classList.contains('hidden')
-        ? `(${groupRows.length}) ▲`
-        : `(${groupRows.length}) ▼`;
-    });
-  });
-}
-
-// --- Search & Filter ---
-function applyFilters() {
-  const q = search.value.toLowerCase();
-  const sel = selectionFilter.value;
-  const filtered = allRows.filter(r => {
-    const matchesSearch = r.some(c => c.toLowerCase().includes(q));
-    const matchesSel = !sel || r[indicativeIndex] === sel;
-    return matchesSearch && matchesSel;
-  });
-  renderGroups(filtered);
-}
-
-search.addEventListener('input', applyFilters);
-selectionFilter.addEventListener('change', applyFilters);
-
-// --- Export visible ---
-exportBtn.addEventListener('click', () => {
-  const rows = [];
-  const visibleHeaders = headers.filter((_, i) => i !== indicativeIndex);
-  rows.push(visibleHeaders.join(','));
-  container.querySelectorAll('section').forEach(section => {
-    const wrapper = section.querySelector('.group-content');
-    if (wrapper.classList.contains('hidden')) return;
-    wrapper.querySelectorAll('tbody tr').forEach(tr => {
-      const cells = Array.from(tr.children).map(td => td.textContent);
-      rows.push(cells.join(','));
-    });
-  });
-  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'filtered_data.csv';
-  link.click();
-});
-
-// --- Expand / Collapse All ---
-toggleGroupsBtn.addEventListener('click', () => {
-  const allGroups = container.querySelectorAll('.group-content');
-  const anyOpen = Array.from(allGroups).some(g => !g.classList.contains('hidden'));
-
-  allGroups.forEach(groupContent => {
-    const section = groupContent.parentElement;
-    const header = section.querySelector('.group-header span:last-child');
-    const count = groupContent.querySelectorAll('tbody tr').length;
-    if (anyOpen) {
-      groupContent.classList.add('hidden');
-      header.textContent = `(${count}) ▲`;
-    } else {
-      groupContent.classList.remove('hidden');
-      header.textContent = `(${count}) ▼`;
-    }
-  });
-
-  toggleGroupsBtn.textContent = anyOpen ? 'Expand All' : 'Collapse All';
-});
-</script>
-</body>
-</html>
