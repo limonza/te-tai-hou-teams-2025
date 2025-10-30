@@ -124,6 +124,9 @@ tbody td {
 tbody tr:hover {
   background: #f9fafb;
 }
+th::after {
+  content: '';
+}
 
 /* === COLUMN WRAPPING RULES === */
 td:not(:last-child),
@@ -137,21 +140,22 @@ th:last-child {
   white-space: normal;
 }
 
-/* Make Email wider */
+/* --- Specific column widths --- */
 td:nth-child(2),
 th:nth-child(2) {
-  width: 30%;
+  width: 30%; /* Email column wider */
 }
 
-/* Compact Paid, Cleared, GD Regist columns */
-td:nth-child(5),
+/* --- Minimum width for compact columns --- */
 th:nth-child(5),
-td:nth-child(6),
+td:nth-child(5), /* Paid */
 th:nth-child(6),
-td:nth-child(7),
-th:nth-child(7) {
-  width: 6%;
-  white-space: nowrap;
+td:nth-child(6), /* Cleared */
+th:nth-child(7),
+td:nth-child(7)  /* GD Regist. */
+{
+  width: 60px;
+  min-width: 60px;
   text-align: center;
 }
 
@@ -191,24 +195,14 @@ th:nth-child(7) {
   <a href="https://www.poriruaheatbasketball.org" target="_blank">
     <img src="images/logo.png" alt="Porirua Heat Logo" style="height: 60px; border-radius: 50%; margin-bottom: 12px;">
   </a>
-  <h1>TE TAI HOU TEAMS – 2025 TERM 4</h1>
+  <h1 style="font-size: 1.8em; margin: 0; color: #1a365d;">TE TAI HOU TEAMS – 2025 TERM 4</h1>
 </header>
 
 <div class="controls">
   <input id="search" type="text" placeholder="Search...">
-  <select id="selectionFilter">
-    <option value="">All Teams</option>
-  </select>
-  <select id="clearedFilter">
-    <option value="">All Records</option>
-    <option value="Cleared">Cleared</option>
-    <option value="NotCleared">Not Cleared</option>
-  </select>
-  <select id="gdFilter">
-    <option value="">All GD Regist</option>
-    <option value="Registered">Registered</option>
-    <option value="Blank">Not Registered</option>
-  </select>
+  <select id="selectionFilter"><option value="">All Teams</option></select>
+  <select id="clearedFilter"><option value="">All Cleared</option></select>
+  <select id="gdRegFilter"><option value="">All GD Regist.</option></select>
   <button id="export">Export CSV</button>
   <button id="toggleGroups">Collapse All</button>
 </div>
@@ -223,129 +217,207 @@ th:nth-child(7) {
 </div>
 
 <script>
-const data = [
-  { team: "Heat Red", fullName: "Jane Doe", email: "jane@example.com", contact: "0211234567", selection: "Selected", paid: "Yes", cleared: "Yes", gdRegist: "Yes" },
-  { team: "Heat Red", fullName: "John Smith", email: "john@example.com", contact: "0219876543", selection: "Pending", paid: "No", cleared: "No", gdRegist: "" },
-  { team: "Heat Blue", fullName: "Liam Brown", email: "liam@example.com", contact: "0215551212", selection: "Selected", paid: "Yes", cleared: "Yes", gdRegist: "" },
+const search = document.getElementById('search');
+const selectionFilter = document.getElementById('selectionFilter');
+const clearedFilter = document.getElementById('clearedFilter');
+const gdRegFilter = document.getElementById('gdRegFilter');
+const container = document.getElementById('table-container');
+const exportBtn = document.getElementById('export');
+const toggleGroupsBtn = document.getElementById('toggleGroups');
+
+let headers = [];
+let allRows = [];
+let indicativeIndex = -1;
+let clearedIndex = -1;
+let gdRegIndex = -1;
+
+const groupOrder = [
+  "10U Dev","10U Elite","12U Dev","12U Elite",
+  "14U Black","14U Orange","14U Blaze","14U Flames",
+  "16U Dev","16U Elite","20U","Mens","Womens"
 ];
 
-// --- DOM elements ---
-const tableContainer = document.getElementById("table-container");
-const selectionFilter = document.getElementById("selectionFilter");
-const clearedFilter = document.getElementById("clearedFilter");
-const gdFilter = document.getElementById("gdFilter");
-const search = document.getElementById("search");
-const toggleGroups = document.getElementById("toggleGroups");
+// --- Load CSV ---
+fetch('teams.csv')
+  .then(res => res.text())
+  .then(text => {
+    const lines = text.trim().split('\n').map(l => l.split(','));
+    headers = lines[0].map(h => h.trim());
+    indicativeIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
+    clearedIndex = headers.findIndex(h => h.toLowerCase() === 'cleared');
+    gdRegIndex = headers.findIndex(h => h.toLowerCase() === 'gd regist.');
 
-let allCollapsed = false;
+    allRows = lines.slice(1).map(r => r.map(c => c.trim()))
+      .filter(r => r[indicativeIndex] && r[indicativeIndex] !== '');
 
-// --- Populate Team Filter ---
-const teams = [...new Set(data.map(d => d.team))].sort();
-teams.forEach(team => {
-  const opt = document.createElement("option");
-  opt.value = team;
-  opt.textContent = team;
-  selectionFilter.appendChild(opt);
-});
-
-// --- Render Function ---
-function renderTable() {
-  const searchTerm = search.value.toLowerCase();
-  const selectedTeam = selectionFilter.value;
-  const clearedVal = clearedFilter.value;
-  const gdVal = gdFilter.value;
-
-  const filtered = data.filter(item => {
-    const matchSearch = Object.values(item).some(v => v.toLowerCase().includes(searchTerm));
-    const matchTeam = !selectedTeam || item.team === selectedTeam;
-    const matchCleared = !clearedVal || 
-      (clearedVal === "Cleared" && item.cleared.toLowerCase() === "yes") ||
-      (clearedVal === "NotCleared" && item.cleared.toLowerCase() !== "yes");
-    const matchGD = !gdVal || 
-      (gdVal === "Registered" && item.gdRegist.toLowerCase() === "yes") ||
-      (gdVal === "Blank" && item.gdRegist.trim() === "");
-    return matchSearch && matchTeam && matchCleared && matchGD;
+    populateDropdowns();
+    renderGroups(allRows);
   });
 
-  const groups = {};
-  filtered.forEach(r => {
-    if (!groups[r.team]) groups[r.team] = [];
-    groups[r.team].push(r);
+// --- Populate dropdowns ---
+function populateDropdowns() {
+  const teamValues = [...new Set(allRows.map(r => r[indicativeIndex]))];
+  const clearedValues = [...new Set(allRows.map(r => r[clearedIndex] || '(Blank)'))];
+  const gdRegValues = [...new Set(allRows.map(r => r[gdRegIndex] || '(Blank)'))];
+
+  const orderedTeams = groupOrder.concat(teamValues.filter(v => !groupOrder.includes(v)));
+  orderedTeams.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    selectionFilter.appendChild(opt);
   });
 
-  tableContainer.innerHTML = "";
-  Object.entries(groups).forEach(([team, rows]) => {
-    const section = document.createElement("section");
-    const header = document.createElement("div");
-    header.className = "group-header";
-    header.textContent = `${team} (${rows.length})`;
-    header.onclick = () => content.classList.toggle("hidden");
+  clearedValues.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v === '(Blank)' ? '' : v;
+    opt.textContent = v;
+    clearedFilter.appendChild(opt);
+  });
 
-    const content = document.createElement("div");
-    content.className = "group-content";
-
-    const table = document.createElement("table");
-    const thead = document.createElement("thead");
-    thead.innerHTML = `
-      <tr>
-        <th>Full Name</th>
-        <th>Email</th>
-        <th>Contact Number</th>
-        <th>Indicative Selection</th>
-        <th>Paid</th>
-        <th>Cleared</th>
-        <th>GD Regist</th>
-      </tr>`;
-    table.appendChild(thead);
-
-    const tbody = document.createElement("tbody");
-    rows.forEach(r => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td data-label="Full Name">${r.fullName}</td>
-        <td data-label="Email">${r.email}</td>
-        <td data-label="Contact Number">${r.contact}</td>
-        <td data-label="Indicative Selection">${r.selection}</td>
-        <td data-label="Paid" style="text-align:center">${r.paid}</td>
-        <td data-label="Cleared" style="text-align:center">${r.cleared}</td>
-        <td data-label="GD Regist" style="text-align:center">${r.gdRegist}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    content.appendChild(table);
-    section.append(header, content);
-    tableContainer.appendChild(section);
+  gdRegValues.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v === '(Blank)' ? '' : v;
+    opt.textContent = v;
+    gdRegFilter.appendChild(opt);
   });
 }
 
-renderTable();
+// --- Render groups ---
+function renderGroups(rows) {
+  container.innerHTML = '';
 
-// --- Filters ---
-search.oninput = renderTable;
-selectionFilter.onchange = renderTable;
-clearedFilter.onchange = renderTable;
-gdFilter.onchange = renderTable;
+  const groups = rows.reduce((acc, row) => {
+    const key = row[indicativeIndex];
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(row);
+    return acc;
+  }, {});
 
-// --- Collapse/Expand ---
-toggleGroups.onclick = () => {
-  const contents = document.querySelectorAll(".group-content");
-  contents.forEach(c => c.classList.toggle("hidden", !allCollapsed));
-  allCollapsed = !allCollapsed;
-  toggleGroups.textContent = allCollapsed ? "Expand All" : "Collapse All";
-};
+  const filterVal = selectionFilter.value;
+  const allGroupKeys = Object.keys(groups);
+  const visibleKeys = filterVal
+    ? [filterVal]
+    : [...groupOrder.filter(g => allGroupKeys.includes(g)), ...allGroupKeys.filter(k => !groupOrder.includes(k))];
 
-// --- Export CSV ---
-document.getElementById("export").onclick = () => {
-  const rows = [["Full Name", "Email", "Contact", "Selection", "Paid", "Cleared", "GD Regist"]];
-  data.forEach(r => rows.push([r.fullName, r.email, r.contact, r.selection, r.paid, r.cleared, r.gdRegist]));
-  const csv = rows.map(r => r.join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "te-tai-hou-teams-2025.csv";
-  a.click();
-};
+  visibleKeys.forEach(groupName => {
+    const groupRows = groups[groupName];
+    if (!groupRows?.length) return;
+
+    const section = document.createElement('section');
+    const header = document.createElement('div');
+    header.className = 'group-header';
+    header.innerHTML = `<span>${groupName}</span><span>(${groupRows.length}) ▼</span>`;
+    section.appendChild(header);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'group-content';
+
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+
+    headers.forEach((h, i) => {
+      if (i === indicativeIndex) return;
+      const th = document.createElement('th');
+      th.textContent = h;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    groupRows.forEach(r => {
+      const tr = document.createElement('tr');
+      r.forEach((c, i) => {
+        if (i === indicativeIndex) return;
+        const td = document.createElement('td');
+        td.textContent = c;
+        td.setAttribute('data-label', headers[i]);
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    wrapper.appendChild(table);
+    section.appendChild(wrapper);
+    container.appendChild(section);
+
+    // Toggle individual group
+    header.addEventListener('click', () => {
+      wrapper.classList.toggle('hidden');
+      const arrow = header.querySelector('span:last-child');
+      arrow.textContent = wrapper.classList.contains('hidden')
+        ? `(${groupRows.length}) ▲`
+        : `(${groupRows.length}) ▼`;
+    });
+  });
+}
+
+// --- Search & Filter ---
+function applyFilters() {
+  const q = search.value.toLowerCase();
+  const sel = selectionFilter.value;
+  const cleared = clearedFilter.value;
+  const gdReg = gdRegFilter.value;
+
+  const filtered = allRows.filter(r => {
+    const matchesSearch = r.some(c => c.toLowerCase().includes(q));
+    const matchesSel = !sel || r[indicativeIndex] === sel;
+    const matchesCleared = cleared === '' ? true : (r[clearedIndex] || '') === cleared;
+    const matchesGD = gdReg === '' ? true : (r[gdRegIndex] || '') === gdReg;
+    return matchesSearch && matchesSel && matchesCleared && matchesGD;
+  });
+
+  renderGroups(filtered);
+}
+
+search.addEventListener('input', applyFilters);
+selectionFilter.addEventListener('change', applyFilters);
+clearedFilter.addEventListener('change', applyFilters);
+gdRegFilter.addEventListener('change', applyFilters);
+
+// --- Export visible ---
+exportBtn.addEventListener('click', () => {
+  const rows = [];
+  const visibleHeaders = headers.filter((_, i) => i !== indicativeIndex);
+  rows.push(visibleHeaders.join(','));
+  container.querySelectorAll('section').forEach(section => {
+    const wrapper = section.querySelector('.group-content');
+    if (wrapper.classList.contains('hidden')) return;
+    wrapper.querySelectorAll('tbody tr').forEach(tr => {
+      const cells = Array.from(tr.children).map(td => td.textContent);
+      rows.push(cells.join(','));
+    });
+  });
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'filtered_data.csv';
+  link.click();
+});
+
+// --- Expand / Collapse All ---
+toggleGroupsBtn.addEventListener('click', () => {
+  const allGroups = container.querySelectorAll('.group-content');
+  const anyOpen = Array.from(allGroups).some(g => !g.classList.contains('hidden'));
+
+  allGroups.forEach(groupContent => {
+    const section = groupContent.parentElement;
+    const header = section.querySelector('.group-header span:last-child');
+    const count = groupContent.querySelectorAll('tbody tr').length;
+    if (anyOpen) {
+      groupContent.classList.add('hidden');
+      header.textContent = `(${count}) ▲`;
+    } else {
+      groupContent.classList.remove('hidden');
+      header.textContent = `(${count}) ▼`;
+    }
+  });
+
+  toggleGroupsBtn.textContent = anyOpen ? 'Expand All' : 'Collapse All';
+});
 </script>
 </body>
 </html>
