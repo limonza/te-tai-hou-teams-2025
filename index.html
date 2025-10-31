@@ -15,13 +15,10 @@ body {
   display: flex;
   justify-content: center;
 }
-
 #page-wrapper { width: 100%; max-width: 75%; min-width: 320px; }
-
 header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px; }
 header img { height: 60px; border-radius: 50%; }
 header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
-
 .controls {
   display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
 }
@@ -35,17 +32,14 @@ header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
   background-color: #2b6cb0; color: white; cursor: pointer;
 }
 .controls button:hover { background-color: #1e4e8c; }
-
 section { margin-bottom: 1rem; border-radius: 0.75rem; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.1); overflow: hidden; }
 .group-header { font-weight: 600; font-size: 1.1rem; padding: 0.6rem 1rem; background: linear-gradient(to right, #ef4444, #f97316); color: #fff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 .group-content { padding: 0; overflow-x: auto; transition: all 0.3s ease; }
 .group-content.hidden { display: none; }
-
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
 thead th { background: #f3f4f6; position: sticky; top: 0; z-index: 2; padding: 0.5rem; text-align: left; }
 tbody td { border-top: 1px solid #e5e7eb; padding: 0.4rem 0.5rem; word-wrap: break-word; }
 tbody tr:hover { background: #f9fafb; }
-
 @media (max-width: 768px) {
   #page-wrapper { max-width: 100%; }
   table, thead, tbody, th, td, tr { display: block; }
@@ -102,11 +96,7 @@ let indicativeIndex = -1;
 let clearedIndex = -1;
 let gdRegIndex = -1;
 
-const groupOrder = [
-  "10U Dev","10U Elite","12U Dev","12U Elite",
-  "14U Black","14U Orange","14U Blaze","14U Flames",
-  "16U Dev","16U Elite","20U","Mens","Womens"
-];
+const groupOrder = ["10U Dev","10U Elite","12U Dev","12U Elite","14U Black","14U Orange","14U Blaze","14U Flames","16U Dev","16U Elite","20U","Mens","Womens"];
 
 // --- Load CSV ---
 fetch('teams.csv')
@@ -149,27 +139,26 @@ function renderGroups(rows) {
     const header=document.createElement('div'); header.className='group-header';
     header.innerHTML=`<span>${groupName}</span><span>(${groupRows.length}) ▼</span>`;
     section.appendChild(header);
-    
+
     const wrapper=document.createElement('div'); wrapper.className='group-content';
     const table=document.createElement('table');
     const thead=document.createElement('thead'); const headerRow=document.createElement('tr');
 
     headers.forEach((h,i)=>{
       if(i === indicativeIndex) return; // hide column
-      const th=document.createElement('th'); th.textContent=h; th.setAttribute('data-label', h);
-      headerRow.appendChild(th);
+      const th=document.createElement('th'); th.textContent=h; headerRow.appendChild(th);
     });
-    
+
     thead.appendChild(headerRow); table.appendChild(thead);
     const tbody=document.createElement('tbody');
-    
+
     groupRows.forEach(r=>{
       const tr=document.createElement('tr');
       r.forEach((c,i)=>{
         if(i === indicativeIndex) return; // hide column
         const td=document.createElement('td');
         td.innerHTML=`<span>${c||''}</span>`;
-        td.setAttribute('data-label', headers[i]);
+        td.setAttribute('data-label',headers[i]);
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
@@ -182,14 +171,28 @@ function renderGroups(rows) {
 
 // --- Filters ---
 function applyFilters() {
-  const q = search.value.toLowerCase(), sel = selectionFilter.value, cleared = clearedFilter.value, gdReg = gdRegFilter.value;
-  const filtered = allRows.filter(r=>{
-    const matchesSearch = r.some(c=>(c||'').toLowerCase().includes(q));
-    const matchesSel = !sel || r[indicativeIndex]===sel;
-    const matchesCleared = !cleared || cleared==='(Blank)'? (r[clearedIndex]||'')==='' : r[clearedIndex]===cleared;
-    const matchesGD = !gdReg || gdReg==='(Blank)'? (r[gdRegIndex]||'')==='' : r[gdRegIndex]===gdReg;
+  const q = search.value.toLowerCase();
+  const sel = selectionFilter.value;
+  const cleared = clearedFilter.value;
+  const gdReg = gdRegFilter.value;
+
+  const filtered = allRows.filter(r => {
+    const matchesSearch = r.some(c => (c||'').toLowerCase().includes(q));
+    const matchesSel = !sel ? true : r[indicativeIndex] === sel;
+    const matchesCleared = !cleared 
+      ? true 
+      : cleared === '(Blank)' 
+        ? (r[clearedIndex]||'') === '' 
+        : r[clearedIndex] === cleared;
+    const matchesGD = !gdReg 
+      ? true 
+      : gdReg === '(Blank)' 
+        ? (r[gdRegIndex]||'') === '' 
+        : r[gdRegIndex] === gdReg;
+
     return matchesSearch && matchesSel && matchesCleared && matchesGD;
   });
+
   renderGroups(filtered);
 }
 
@@ -241,17 +244,12 @@ generatePDFBtn.addEventListener('click', () => {
       const groupName = section.querySelector('.group-header span:first-child').textContent;
       const table = section.querySelector('table');
 
-      const headersForPDF = ['#'].concat(
-        Array.from(table.querySelectorAll('thead th'))
-          .map(th=>th.textContent)
-      );
-
-      const dataForPDF = Array.from(table.querySelectorAll('tbody tr')).map((tr,i)=>
-        [i+1].concat(Array.from(tr.children).map(td=>td.textContent))
-      );
+      const headersForPDF = ['#'].concat(Array.from(table.querySelectorAll('thead th')).map(th=>th.textContent));
+      const dataForPDF = Array.from(table.querySelectorAll('tbody tr')).map((tr,i)=>[i+1].concat(Array.from(tr.children).map(td=>td.textContent)));
 
       if(index>0) doc.addPage();
 
+      // Logo on top
       const aspectRatio = logoImg.width / logoImg.height;
       const logoHeight = 15; const logoWidth = logoHeight * aspectRatio;
       doc.addImage(logoImg, 'PNG', 14, 10, logoWidth, logoHeight);
