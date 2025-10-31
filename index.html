@@ -125,35 +125,7 @@ tbody tr:hover {
   background: #f9fafb;
 }
 
-/* === COLUMN WRAPPING RULES === */
-td:not(:nth-last-child(-n+3)),
-th:not(:nth-last-child(-n+3)) {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-td:nth-last-child(-n+3),
-th:nth-last-child(-n+3) {
-  white-space: normal;
-}
-
-/* --- Specific column widths --- */
-td:nth-child(2),
-th:nth-child(2) {
-  width: 30%; /* Email column wider */
-}
-th:nth-last-child(3),
-td:nth-last-child(3), /* Paid */
-th:nth-last-child(2),
-td:nth-last-child(2), /* Cleared */
-th:nth-last-child(1),
-td:nth-last-child(1)  /* GD Regist. */
-{
-  min-width: 60px;
-  text-align: center;
-}
-
-/* --- ✅ Responsive --- */
+/* --- Responsive mobile view --- */
 @media (max-width: 768px) {
   #page-wrapper {
     max-width: 100%;
@@ -174,12 +146,12 @@ td:nth-last-child(1)  /* GD Regist. */
 
   td {
     display: flex;
-    justify-content: space-between; /* Label left, value right */
-    align-items: center;
-    padding: 8px;
-    white-space: normal;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 6px 8px;
     word-break: break-word;
     overflow-wrap: anywhere;
+    border-bottom: 1px dashed #eee;
   }
 
   td::before {
@@ -188,12 +160,24 @@ td:nth-last-child(1)  /* GD Regist. */
     color: #2b6cb0;
     flex: 1;
     text-align: left;
-    padding-right: 10px;
+    margin-right: 10px;
+    white-space: nowrap;
   }
 
   td span {
     flex: 2;
     text-align: right;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  td[data-label="Email"] span,
+  td[data-label="Contact number"] span {
+    text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-all;
   }
 }
 </style>
@@ -342,7 +326,7 @@ function renderGroups(rows) {
       r.forEach((c, i) => {
         if (i === indicativeIndex) return;
         const td = document.createElement('td');
-        td.innerHTML = `<span>${c || ''}</span>`;
+        td.innerHTML = `<span>${c || ''}</span>`; // ✅ wrapped in span for flex layout
         td.setAttribute('data-label', headers[i]);
         tr.appendChild(td);
       });
@@ -364,7 +348,7 @@ function renderGroups(rows) {
   });
 }
 
-// --- Search & Filter ---
+// --- Filters & Export & Expand/Collapse ---
 function applyFilters() {
   const q = search.value.toLowerCase();
   const sel = selectionFilter.value;
@@ -394,7 +378,6 @@ selectionFilter.addEventListener('change', applyFilters);
 clearedFilter.addEventListener('change', applyFilters);
 gdRegFilter.addEventListener('change', applyFilters);
 
-// --- Export visible ---
 exportBtn.addEventListener('click', () => {
   const rows = [];
   const visibleHeaders = headers.filter((_, i) => i !== indicativeIndex);
@@ -414,7 +397,6 @@ exportBtn.addEventListener('click', () => {
   link.click();
 });
 
-// --- Expand / Collapse All ---
 toggleGroupsBtn.addEventListener('click', () => {
   const allGroups = container.querySelectorAll('.group-content');
   const anyOpen = Array.from(allGroups).some(g => !g.classList.contains('hidden'));
