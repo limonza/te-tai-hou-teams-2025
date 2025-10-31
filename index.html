@@ -17,164 +17,47 @@ body {
   justify-content: center;
 }
 
-#page-wrapper {
-  width: 100%;
-  max-width: 75%;
-  min-width: 320px;
-}
+#page-wrapper { width: 100%; max-width: 75%; min-width: 320px; }
 
-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-header img {
-  height: 60px;
-  border-radius: 50%;
-}
-header h1 {
-  font-size: 1.8em;
-  margin: 0;
-  color: #1a365d;
-}
+header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px; }
+header img { height: 60px; border-radius: 50%; }
+header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
 
 .controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
+  display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
 }
-.controls input,
-.controls select,
-.controls button {
-  padding: 6px 10px;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  font-size: 0.95em;
+.controls input, .controls select, .controls button {
+  padding: 6px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.95em;
 }
-.controls input:focus,
-.controls select:focus {
-  outline: none;
-  border-color: #2b6cb0;
-  box-shadow: 0 0 4px rgba(43,108,176,0.3);
+.controls input:focus, .controls select:focus {
+  outline: none; border-color: #2b6cb0; box-shadow: 0 0 4px rgba(43,108,176,0.3);
 }
 .controls button {
-  background-color: #2b6cb0;
-  color: white;
-  cursor: pointer;
+  background-color: #2b6cb0; color: white; cursor: pointer;
 }
-.controls button:hover {
-  background-color: #1e4e8c;
-}
+.controls button:hover { background-color: #1e4e8c; }
 
-section {
-  margin-bottom: 1rem;
-  border-radius: 0.75rem;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  overflow: hidden;
-}
-.group-header {
-  font-weight: 600;
-  font-size: 1.1rem;
-  padding: 0.6rem 1rem;
-  background: linear-gradient(to right, #ef4444, #f97316);
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-.group-content {
-  padding: 0;
-  overflow-x: auto;
-  transition: all 0.3s ease;
-}
-.group-content.hidden {
-  display: none;
-}
+section { margin-bottom: 1rem; border-radius: 0.75rem; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.1); overflow: hidden; }
+.group-header { font-weight: 600; font-size: 1.1rem; padding: 0.6rem 1rem; background: linear-gradient(to right, #ef4444, #f97316); color: #fff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.group-content { padding: 0; overflow-x: auto; transition: all 0.3s ease; }
+.group-content.hidden { display: none; }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-  table-layout: fixed;
-}
-thead th {
-  background: #f3f4f6;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  padding: 0.5rem;
-  text-align: left;
-}
-tbody td {
-  border-top: 1px solid #e5e7eb;
-  padding: 0.4rem 0.5rem;
-  word-wrap: break-word;
-}
-tbody tr:hover {
-  background: #f9fafb;
-}
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+thead th { background: #f3f4f6; position: sticky; top: 0; z-index: 2; padding: 0.5rem; text-align: left; }
+tbody td { border-top: 1px solid #e5e7eb; padding: 0.4rem 0.5rem; word-wrap: break-word; }
+tbody tr:hover { background: #f9fafb; }
 
 @media (max-width: 768px) {
-  #page-wrapper {
-    max-width: 100%;
-  }
-
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
-
-  thead {
-    display: none;
-  }
-
-  tr {
-    margin-bottom: 12px;
-    border-bottom: 1px solid #ddd;
-  }
-
+  #page-wrapper { max-width: 100%; }
+  table, thead, tbody, th, td, tr { display: block; }
+  thead { display: none; }
+  tr { margin-bottom: 12px; border-bottom: 1px solid #ddd; }
   tr:nth-child(odd) { background-color: #ffffff; }
   tr:nth-child(even) { background-color: #f2f4f7; }
-
-  td {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 6px 8px;
-    word-break: break-word;
-    overflow-wrap: anywhere;
-    border-bottom: 1px dashed #eee;
-  }
-
-  td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #2b6cb0;
-    flex: 1;
-    text-align: left;
-    margin-right: 10px;
-    white-space: nowrap;
-  }
-
-  td span {
-    flex: 2;
-    text-align: right;
-    word-break: break-word;
-    overflow-wrap: anywhere;
-    white-space: normal;
-  }
-
-  td[data-label="Email"] span,
-  td[data-label="Contact number"] span {
-    text-align: right;
-    word-break: break-all;
-    overflow-wrap: anywhere;
-  }
+  td { display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 8px; word-break: break-word; overflow-wrap: anywhere; border-bottom: 1px dashed #eee; }
+  td::before { content: attr(data-label); font-weight: 600; color: #2b6cb0; flex: 1; text-align: left; margin-right: 10px; white-space: nowrap; }
+  td span { flex: 2; text-align: right; word-break: break-word; overflow-wrap: anywhere; white-space: normal; }
+  td[data-label="Email"] span, td[data-label="Contact number"] span { text-align: right; word-break: break-all; overflow-wrap: anywhere; }
 }
 </style>
 </head>
@@ -201,7 +84,6 @@ tbody tr:hover {
 <div id="table-container"></div>
 </div>
 
-<!-- jsPDF + autotable -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -227,7 +109,6 @@ const groupOrder = [
   "16U Dev","16U Elite","20U","Mens","Womens"
 ];
 
-// Load CSV
 fetch('teams.csv')
   .then(res => res.text())
   .then(text => {
@@ -236,10 +117,7 @@ fetch('teams.csv')
     indicativeIndex = headers.findIndex(h => h.toLowerCase() === 'indicative selection');
     clearedIndex = headers.findIndex(h => h.toLowerCase() === 'cleared');
     gdRegIndex = headers.findIndex(h => h.toLowerCase() === 'gd regist.');
-
-    allRows = lines.slice(1).map(r => r.map(c => c.trim()))
-      .filter(r => r[indicativeIndex] && r[indicativeIndex] !== '');
-
+    allRows = lines.slice(1).map(r => r.map(c => c.trim())).filter(r => r[indicativeIndex]);
     populateDropdowns();
     renderGroups(allRows);
   });
@@ -249,168 +127,76 @@ function populateDropdowns() {
   const clearedValues = [...new Set(allRows.map(r => r[clearedIndex] || '(Blank)'))];
   const gdRegValues = [...new Set(allRows.map(r => r[gdRegIndex] || '(Blank)'))];
 
-  const orderedTeams = groupOrder.concat(teamValues.filter(v => !groupOrder.includes(v)));
-  orderedTeams.forEach(v => {
-    const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = v;
+  [...groupOrder, ...teamValues.filter(v => !groupOrder.includes(v))].forEach(v => {
+    const opt = document.createElement('option'); opt.value = v; opt.textContent = v;
     selectionFilter.appendChild(opt);
   });
-
-  clearedValues.forEach(v => {
-    const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = v;
-    clearedFilter.appendChild(opt);
-  });
-
-  gdRegValues.forEach(v => {
-    const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = v;
-    gdRegFilter.appendChild(opt);
-  });
+  clearedValues.forEach(v => { const opt = document.createElement('option'); opt.value = v; opt.textContent = v; clearedFilter.appendChild(opt); });
+  gdRegValues.forEach(v => { const opt = document.createElement('option'); opt.value = v; opt.textContent = v; gdRegFilter.appendChild(opt); });
 }
 
-// Render Groups
 function renderGroups(rows) {
   container.innerHTML = '';
-  const groups = rows.reduce((acc, row) => {
-    const key = row[indicativeIndex];
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(row);
-    return acc;
-  }, {});
-
+  const groups = rows.reduce((acc,r)=>{const key=r[indicativeIndex]; (acc[key]??= []).push(r); return acc;},{});
   const filterVal = selectionFilter.value;
   const allGroupKeys = Object.keys(groups);
-  const visibleKeys = filterVal
-    ? [filterVal]
-    : [...groupOrder.filter(g => allGroupKeys.includes(g)), ...allGroupKeys.filter(k => !groupOrder.includes(k))];
+  const visibleKeys = filterVal ? [filterVal] : [...groupOrder.filter(g=>allGroupKeys.includes(g)), ...allGroupKeys.filter(k=>!groupOrder.includes(k))];
 
-  visibleKeys.forEach(groupName => {
-    const groupRows = groups[groupName];
-    if (!groupRows?.length) return;
-
-    const section = document.createElement('section');
-    const header = document.createElement('div');
-    header.className = 'group-header';
-    header.innerHTML = `<span>${groupName}</span><span>(${groupRows.length}) ▼</span>`;
+  visibleKeys.forEach(groupName=>{
+    const groupRows = groups[groupName]; if(!groupRows?.length) return;
+    const section=document.createElement('section');
+    const header=document.createElement('div'); header.className='group-header';
+    header.innerHTML=`<span>${groupName}</span><span>(${groupRows.length}) ▼</span>`;
     section.appendChild(header);
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'group-content';
-
-    const table = document.createElement('table');
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-
-    headers.forEach((h, i) => {
-      if (i === indicativeIndex || h.toLowerCase() === 'paid' || h.toLowerCase() === 'cleared') return;
-      const th = document.createElement('th');
-      th.textContent = h;
-      headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    const tbody = document.createElement('tbody');
-    groupRows.forEach(r => {
-      const tr = document.createElement('tr');
-      r.forEach((c, i) => {
-        if (i === indicativeIndex || headers[i].toLowerCase() === 'paid' || headers[i].toLowerCase() === 'cleared') return;
-        const td = document.createElement('td');
-        td.innerHTML = `<span>${c || ''}</span>`;
-        td.setAttribute('data-label', headers[i]);
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(tbody);
-    wrapper.appendChild(table);
-    section.appendChild(wrapper);
-    container.appendChild(section);
-
-    header.addEventListener('click', () => {
-      wrapper.classList.toggle('hidden');
-      const arrow = header.querySelector('span:last-child');
-      arrow.textContent = wrapper.classList.contains('hidden')
-        ? `(${groupRows.length}) ▲`
-        : `(${groupRows.length}) ▼`;
-    });
+    const wrapper=document.createElement('div'); wrapper.className='group-content';
+    const table=document.createElement('table');
+    const thead=document.createElement('thead'); const headerRow=document.createElement('tr');
+    headers.forEach((h,i)=>{const th=document.createElement('th'); th.textContent=h; headerRow.appendChild(th);});
+    thead.appendChild(headerRow); table.appendChild(thead);
+    const tbody=document.createElement('tbody');
+    groupRows.forEach(r=>{const tr=document.createElement('tr'); r.forEach((c,i)=>{const td=document.createElement('td'); td.innerHTML=`<span>${c||''}</span>`; td.setAttribute('data-label',headers[i]); tr.appendChild(td);}); tbody.appendChild(tr);});
+    table.appendChild(tbody); wrapper.appendChild(table); section.appendChild(wrapper); container.appendChild(section);
+    header.addEventListener('click',()=>{wrapper.classList.toggle('hidden'); const arrow=header.querySelector('span:last-child'); arrow.textContent=wrapper.classList.contains('hidden')?`(${groupRows.length}) ▲`:`(${groupRows.length}) ▼`;});
   });
 }
 
-// Filters
 function applyFilters() {
-  const q = search.value.toLowerCase();
-  const sel = selectionFilter.value;
-  const cleared = clearedFilter.value;
-  const gdReg = gdRegFilter.value;
-
-  const filtered = allRows.filter(r => {
-    const matchesSearch = r.some(c => (c || '').toLowerCase().includes(q));
-    const matchesSel = !sel || r[indicativeIndex] === sel;
-
-    const cellCleared = r[clearedIndex] || '';
-    const matchesCleared = cleared === '' ? true
-      : (cleared === '(Blank)' ? cellCleared === '' : cellCleared === cleared);
-
-    const cellGD = r[gdRegIndex] || '';
-    const matchesGD = gdReg === '' ? true
-      : (gdReg === '(Blank)' ? cellGD === '' : cellGD === gdReg);
-
+  const q = search.value.toLowerCase(), sel = selectionFilter.value, cleared = clearedFilter.value, gdReg = gdRegFilter.value;
+  const filtered = allRows.filter(r=>{
+    const matchesSearch = r.some(c=>(c||'').toLowerCase().includes(q));
+    const matchesSel = !sel || r[indicativeIndex]===sel;
+    const matchesCleared = !cleared || cleared==='(Blank)'? (r[clearedIndex]||'')==='' : r[clearedIndex]===cleared;
+    const matchesGD = !gdReg || gdReg==='(Blank)'? (r[gdRegIndex]||'')==='' : r[gdRegIndex]===gdReg;
     return matchesSearch && matchesSel && matchesCleared && matchesGD;
   });
-
   renderGroups(filtered);
 }
 
-search.addEventListener('input', applyFilters);
-selectionFilter.addEventListener('change', applyFilters);
-clearedFilter.addEventListener('change', applyFilters);
-gdRegFilter.addEventListener('change', applyFilters);
+search.addEventListener('input',applyFilters);
+selectionFilter.addEventListener('change',applyFilters);
+clearedFilter.addEventListener('change',applyFilters);
+gdRegFilter.addEventListener('change',applyFilters);
 
-exportBtn.addEventListener('click', () => {
-  const rows = [];
-  const visibleHeaders = headers.filter((_, i) => i !== indicativeIndex && headers[i].toLowerCase() !== 'paid' && headers[i].toLowerCase() !== 'cleared');
+exportBtn.addEventListener('click',()=>{
+  const rows=[]; const visibleHeaders=headers.filter((_,i)=>i!==indicativeIndex);
   rows.push(visibleHeaders.join(','));
-  container.querySelectorAll('section').forEach(section => {
-    const wrapper = section.querySelector('.group-content');
-    if (wrapper.classList.contains('hidden')) return;
-    wrapper.querySelectorAll('tbody tr').forEach(tr => {
-      const cells = Array.from(tr.children).map(td => td.textContent);
-      rows.push(cells.join(','));
-    });
+  container.querySelectorAll('section').forEach(section=>{
+    const wrapper=section.querySelector('.group-content');
+    if(wrapper.classList.contains('hidden')) return;
+    wrapper.querySelectorAll('tbody tr').forEach(tr=>{rows.push(Array.from(tr.children).map(td=>td.textContent).join(','));});
   });
-  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'filtered_data.csv';
-  link.click();
+  const blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const link=document.createElement('a'); link.href=URL.createObjectURL(blob); link.download='filtered_data.csv'; link.click();
 });
 
-// Toggle Groups
-toggleGroupsBtn.addEventListener('click', () => {
-  const allGroups = container.querySelectorAll('.group-content');
-  const anyOpen = Array.from(allGroups).some(g => !g.classList.contains('hidden'));
-  allGroups.forEach(groupContent => {
-    const section = groupContent.parentElement;
-    const header = section.querySelector('.group-header span:last-child');
-    const count = groupContent.querySelectorAll('tbody tr').length;
-    if (anyOpen) {
-      groupContent.classList.add('hidden');
-      header.textContent = `(${count}) ▲`;
-    } else {
-      groupContent.classList.remove('hidden');
-      header.textContent = `(${count}) ▼`;
-    }
-  });
+toggleGroupsBtn.addEventListener('click',()=>{
+  const allGroups=container.querySelectorAll('.group-content');
+  const anyOpen=Array.from(allGroups).some(g=>!g.classList.contains('hidden'));
+  allGroups.forEach(groupContent=>{const section=groupContent.parentElement; const header=section.querySelector('.group-header span:last-child'); const count=groupContent.querySelectorAll('tbody tr').length; if(anyOpen){groupContent.classList.add('hidden'); header.textContent=`(${count}) ▲`;} else {groupContent.classList.remove('hidden'); header.textContent=`(${count}) ▼`;}}); 
   toggleGroupsBtn.textContent = anyOpen ? 'Expand All' : 'Collapse All';
 });
 
-// Generate PDF
+// --- Generate PDF ---
 generatePDFBtn.addEventListener('click', () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'landscape' });
@@ -419,31 +205,24 @@ generatePDFBtn.addEventListener('click', () => {
     const groupName = section.querySelector('.group-header span:first-child').textContent;
     const table = section.querySelector('table');
 
-    const headersForPDF = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
-    const dataForPDF = Array.from(table.querySelectorAll('tbody tr')).map(tr => 
-      Array.from(tr.children).map(td => td.textContent)
+    // Only include columns except Paid/Cleared
+    const headersForPDF = Array.from(table.querySelectorAll('thead th'))
+      .filter(th => !['paid','cleared'].includes(th.textContent.toLowerCase()))
+      .map(th => th.textContent);
+
+    const dataForPDF = Array.from(table.querySelectorAll('tbody tr')).map(tr =>
+      Array.from(tr.children)
+        .filter(td => !['paid','cleared'].includes(td.getAttribute('data-label').toLowerCase()))
+        .map(td => td.textContent)
     );
 
-    // Add logo + header
-    const logo = new Image();
-    logo.src = 'images/logo.png';
-    logo.onload = () => {
-      if (index > 0) doc.addPage();
-      doc.addImage(logo, 'PNG', 10, 10, 30, 30);
-      doc.setFontSize(16);
-      doc.text(`Team: ${groupName}`, 50, 25);
-      doc.autoTable({
-        head: [headersForPDF],
-        body: dataForPDF,
-        startY: 45,
-        theme: 'grid',
-        styles: { fontSize: 10 }
-      });
-      if (index === container.querySelectorAll('section').length - 1) {
-        doc.save('TeTaiHouTeams.pdf');
-      }
-    };
+    if (index > 0) doc.addPage();
+    doc.setFontSize(16);
+    doc.text(`Team: ${groupName}`, 14, 20);
+    doc.autoTable({ head: [headersForPDF], body: dataForPDF, startY: 25, theme: 'grid', styles: { fontSize: 10 } });
   });
+
+  doc.save('TeTaiHouTeams.pdf');
 });
 </script>
 </body>
