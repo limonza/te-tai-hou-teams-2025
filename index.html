@@ -137,7 +137,7 @@ function populateDropdowns() {
 
 function renderGroups(rows) {
   container.innerHTML = '';
-  const groups = rows.reduce((acc,r)=>{const key=r[indicativeIndex]; (acc[key]??= []).push(r); return acc;},{});
+  const groups = rows.reduce((acc,r)=>{const key=r[indicativeIndex]; (acc[key]??= []).push(r); return acc;}, {});
   const filterVal = selectionFilter.value;
   const allGroupKeys = Object.keys(groups);
   const visibleKeys = filterVal ? [filterVal] : [...groupOrder.filter(g=>allGroupKeys.includes(g)), ...allGroupKeys.filter(k=>!groupOrder.includes(k))];
@@ -196,30 +196,48 @@ toggleGroupsBtn.addEventListener('click',()=>{
   toggleGroupsBtn.textContent = anyOpen ? 'Expand All' : 'Collapse All';
 });
 
-// --- Generate PDF ---
+// --- Generate PDF with player numbers and pagination ---
 generatePDFBtn.addEventListener('click', () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'landscape' });
+  const sections = container.querySelectorAll('section');
+  const totalPages = sections.length;
 
-  container.querySelectorAll('section').forEach((section, index) => {
+  sections.forEach((section, index) => {
     const groupName = section.querySelector('.group-header span:first-child').textContent;
     const table = section.querySelector('table');
 
-    // Only include columns except Paid/Cleared
-    const headersForPDF = Array.from(table.querySelectorAll('thead th'))
-      .filter(th => !['paid','cleared'].includes(th.textContent.toLowerCase()))
-      .map(th => th.textContent);
-
-    const dataForPDF = Array.from(table.querySelectorAll('tbody tr')).map(tr =>
-      Array.from(tr.children)
-        .filter(td => !['paid','cleared'].includes(td.getAttribute('data-label').toLowerCase()))
-        .map(td => td.textContent)
+    // Columns except Paid/Cleared
+    const headersForPDF = ['#'].concat(
+      Array.from(table.querySelectorAll('thead th'))
+        .filter(th => !['paid','cleared'].includes(th.textContent.toLowerCase()))
+        .map(th => th.textContent)
     );
 
-    if (index > 0) doc.addPage();
+    const dataForPDF = Array.from(table.querySelectorAll('tbody tr')).map((tr,i)=> 
+      [i+1].concat(
+        Array.from(tr.children)
+          .filter(td => !['paid','cleared'].includes(td.getAttribute('data-label').toLowerCase()))
+          .map(td => td.textContent)
+      )
+    );
+
+    if(index>0) doc.addPage();
     doc.setFontSize(16);
     doc.text(`Team: ${groupName}`, 14, 20);
-    doc.autoTable({ head: [headersForPDF], body: dataForPDF, startY: 25, theme: 'grid', styles: { fontSize: 10 } });
+
+    doc.autoTable({
+      head: [headersForPDF],
+      body: dataForPDF,
+      startY: 25,
+      theme: 'grid',
+      styles: { fontSize: 10 },
+      didDrawPage: function (data) {
+        const page = doc.getCurrentPageInfo().pageNumber;
+        doc.setFontSize(10);
+        doc.text(`Page ${page} of ${totalPages}`, doc.internal.pageSize.width - 40, doc.internal.pageSize.height - 10);
+      }
+    });
   });
 
   doc.save('TeTaiHouTeams.pdf');
