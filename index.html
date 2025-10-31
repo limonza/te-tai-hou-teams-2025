@@ -6,7 +6,6 @@
 <title>Te Tai Hou Teams – 2025</title>
 
 <style>
-/* --- General page setup --- */
 body {
   font-family: "Segoe UI", Roboto, sans-serif;
   background-color: #f9fafb;
@@ -157,7 +156,8 @@ function renderGroups(rows) {
 
     headers.forEach((h,i)=>{
       if(i === indicativeIndex) return; // hide column
-      const th=document.createElement('th'); th.textContent=h; headerRow.appendChild(th);
+      const th=document.createElement('th'); th.textContent=h; th.setAttribute('data-label', h);
+      headerRow.appendChild(th);
     });
     
     thead.appendChild(headerRow); table.appendChild(thead);
@@ -169,7 +169,7 @@ function renderGroups(rows) {
         if(i === indicativeIndex) return; // hide column
         const td=document.createElement('td');
         td.innerHTML=`<span>${c||''}</span>`;
-        td.setAttribute('data-label',headers[i]);
+        td.setAttribute('data-label', headers[i]);
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
@@ -241,12 +241,17 @@ generatePDFBtn.addEventListener('click', () => {
       const groupName = section.querySelector('.group-header span:first-child').textContent;
       const table = section.querySelector('table');
 
-      const headersForPDF = ['#'].concat(Array.from(table.querySelectorAll('thead th')).map(th=>th.textContent));
-      const dataForPDF = Array.from(table.querySelectorAll('tbody tr')).map((tr,i)=>[i+1].concat(Array.from(tr.children).map(td=>td.textContent)));
+      const headersForPDF = ['#'].concat(
+        Array.from(table.querySelectorAll('thead th'))
+          .map(th=>th.textContent)
+      );
+
+      const dataForPDF = Array.from(table.querySelectorAll('tbody tr')).map((tr,i)=>
+        [i+1].concat(Array.from(tr.children).map(td=>td.textContent))
+      );
 
       if(index>0) doc.addPage();
 
-      // Logo on top
       const aspectRatio = logoImg.width / logoImg.height;
       const logoHeight = 15; const logoWidth = logoHeight * aspectRatio;
       doc.addImage(logoImg, 'PNG', 14, 10, logoWidth, logoHeight);
