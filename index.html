@@ -153,7 +153,7 @@ td:nth-last-child(1)  /* GD Regist. */
   text-align: center;
 }
 
-/* --- Responsive --- */
+/* --- ✅ Responsive --- */
 @media (max-width: 768px) {
   #page-wrapper {
     max-width: 100%;
@@ -173,7 +173,9 @@ td:nth-last-child(1)  /* GD Regist. */
   }
 
   td {
-    display: block;
+    display: flex;
+    justify-content: space-between; /* Label left, value right */
+    align-items: center;
     padding: 8px;
     white-space: normal;
     word-break: break-word;
@@ -182,18 +184,16 @@ td:nth-last-child(1)  /* GD Regist. */
 
   td::before {
     content: attr(data-label);
-    display: block;
     font-weight: 600;
     color: #2b6cb0;
-    margin-bottom: 3px;
+    flex: 1;
+    text-align: left;
+    padding-right: 10px;
   }
 
-  /* ✅ Email and Contact number are full-width, not cut off */
-  td[data-label="Email"],
-  td[data-label="Contact number"] {
-    text-align: left;
-    word-break: break-all;
-    overflow-wrap: anywhere;
+  td span {
+    flex: 2;
+    text-align: right;
   }
 }
 </style>
@@ -342,7 +342,7 @@ function renderGroups(rows) {
       r.forEach((c, i) => {
         if (i === indicativeIndex) return;
         const td = document.createElement('td');
-        td.textContent = c || '';
+        td.innerHTML = `<span>${c || ''}</span>`;
         td.setAttribute('data-label', headers[i]);
         tr.appendChild(td);
       });
