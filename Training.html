@@ -280,4 +280,170 @@ function renderGroups(rows) {
       const numTd = document.createElement('td');
       numTd.textContent = idx + 1;
       tr.appendChild(numTd);
-      r.forEach((c, i) =
+      r.forEach((c, i) => {
+        if (i !== groupIndex) {
+          const td = document.createElement('td');
+          td.textContent = c;
+          td.setAttribute('data-label', headers[i]);
+          tr.appendChild(td);
+        }
+      });
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    wrapper.appendChild(table);
+    section.appendChild(wrapper);
+    container.appendChild(section);
+
+    header.addEventListener('click', () => {
+      wrapper.classList.toggle('hidden');
+      const arrow = header.querySelector('span:last-child');
+      arrow.textContent = wrapper.classList.contains('hidden')
+        ? `(${groupRows.length}) ▲`
+        : `(${groupRows.length}) ▼`;
+    });
+  });
+}
+
+// --- Search & Filter ---
+function applyFilters() {
+  const q = search.value.toLowerCase();
+  const sel = selectionFilter.value;
+  const filtered = allRows.filter(r => {
+    const matchesSearch = r.some(c => c.toLowerCase().includes(q));
+    const matchesSel = !sel || r[groupIndex] === sel;
+    return matchesSearch && matchesSel;
+  });
+  renderGroups(filtered);
+}
+search.addEventListener('input', applyFilters);
+selectionFilter.addEventListener('change', applyFilters);
+
+// --- Export CSV ---
+exportBtn.addEventListener('click', () => {
+  const rows = [];
+  const headersNoGroup = ['#', ...headers.filter((_,i)=>i!==groupIndex)];
+  rows.push(headersNoGroup.join(','));
+  container.querySelectorAll('section').forEach(section => {
+    const wrapper = section.querySelector('.group-content');
+    if (wrapper.classList.contains('hidden')) return;
+    wrapper.querySelectorAll('tbody tr').forEach(tr => {
+      const cells = Array.from(tr.children).map(td => td.textContent);
+      rows.push(cells.join(','));
+    });
+  });
+  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'filtered_data.csv';
+  link.click();
+});
+
+// --- Expand / Collapse All ---
+toggleGroupsBtn.addEventListener('click', () => {
+  const allGroups = container.querySelectorAll('.group-content');
+  const anyOpen = Array.from(allGroups).some(g => !g.classList.contains('hidden'));
+  allGroups.forEach(groupContent => {
+    const section = groupContent.parentElement;
+    const header = section.querySelector('.group-header span:last-child');
+    const count = groupContent.querySelectorAll('tbody tr').length;
+    if (anyOpen) {
+      groupContent.classList.add('hidden');
+      header.textContent = `(${count}) ▲`;
+    } else {
+      groupContent.classList.remove('hidden');
+      header.textContent = `(${count}) ▼`;
+    }
+  });
+  toggleGroupsBtn.textContent = anyOpen ? 'Expand All' : 'Collapse All';
+});
+
+// --- Generate PDF ---
+pdfBtn.addEventListener('click', () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'pt', 'a4');
+
+  const pageTopMargin = 50;
+  const headerHeight = 24;
+  const headerGap = 18;
+  const leftMargin = 40;
+  const rightMargin = 40;
+
+  const sections = Array.from(container.querySelectorAll('section'));
+  let firstGroup = true;
+
+  sections.forEach((section) => {
+    const visibleWrapper = section.querySelector('.group-content');
+    if (visibleWrapper?.classList.contains('hidden')) return;
+
+    const groupTitle = section.querySelector('.group-header span:first-child').textContent;
+    const groupCount = section.querySelector('.group-header span:last-child').textContent;
+    const cleanCount = groupCount.replace('▼', '').replace('▲', '').trim();
+
+    const headersNoGroup = ['#', ...headers.filter((_, i) => i !== groupIndex)];
+    const body = [];
+    section.querySelectorAll('tbody tr').forEach(tr => {
+      const row = Array.from(tr.children).map(td => td.textContent);
+      body.push(row);
+    });
+
+    if (!firstGroup) doc.addPage();
+    else firstGroup = false;
+
+    doc.autoTable({
+      head: [headersNoGroup],
+      body,
+      startY: pageTopMargin + headerHeight + headerGap,
+      theme: 'grid',
+      headStyles: { fillColor: [239, 68, 68], halign: 'center', textColor: 255 },
+      styles: { fontSize: 9, cellPadding: 4 },
+      margin: { left: leftMargin, right: rightMargin },
+      showHead: 'everyPage',
+      columnStyles: { 0: { cellWidth: 30 } },
+      didDrawPage: function () {
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        const gradientSteps = 40;
+        for (let i = 0; i < gradientSteps; i++) {
+          const ratio = i / gradientSteps;
+          const r = Math.round(239 + (249 - 239) * ratio);
+          const g = Math.round(68 + (115 - 68) * ratio);
+          const b = Math.round(68 + (22 - 68) * ratio);
+          const x = (pageWidth / gradientSteps) * i;
+          const w = pageWidth / gradientSteps;
+          doc.setFillColor(r, g, b);
+          doc.rect(x, pageTopMargin - headerHeight + 4, w, headerHeight, 'F');
+        }
+
+        doc.setFontSize(13);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.text(groupTitle, leftMargin, pageTopMargin + 5);
+
+        const countText = cleanCount;
+        const textWidth = doc.getTextWidth(countText);
+        doc.text(countText, pageWidth - rightMargin - textWidth, pageTopMargin + 5);
+
+        doc.setDrawColor(255, 255, 255);
+        doc.setLineWidth(0.3);
+        doc.line(leftMargin, pageTopMargin + headerHeight + 2, pageWidth - rightMargin, pageTopMargin + headerHeight + 2);
+      }
+    });
+  });
+
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
+  }
+
+  doc.save('TeTaiHouTeams.pdf');
+});
+</script>
+</body>
+</html>
