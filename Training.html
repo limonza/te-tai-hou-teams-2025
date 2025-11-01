@@ -17,7 +17,7 @@ body {
   justify-content: center;
 }
 
-/* --- Page wrapper centered --- */
+/* --- Page wrapper --- */
 #page-wrapper {
   width: 100%;
   max-width: 30%;
@@ -121,25 +121,13 @@ tbody td {
 tbody tr:hover {
   background: #f9fafb;
 }
-th::after {
-  content: '';
-}
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
-  #page-wrapper {
-    max-width: 100%;
-  }
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
-  thead {
-    display: none;
-  }
-  tr {
-    margin-bottom: 12px;
-    border-bottom: 1px solid #ddd;
-  }
+  #page-wrapper { max-width: 100%; }
+  table, thead, tbody, th, td, tr { display: block; }
+  thead { display: none; }
+  tr { margin-bottom: 12px; border-bottom: 1px solid #ddd; }
   td {
     display: flex;
     justify-content: space-between;
@@ -185,6 +173,7 @@ th::after {
 <!-- jsPDF + AutoTable -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
 <script>
 const search = document.getElementById('search');
 const selectionFilter = document.getElementById('selectionFilter');
@@ -195,9 +184,8 @@ const pdfBtn = document.getElementById('pdfBtn');
 
 let headers = [];
 let allRows = [];
-let groupIndex = 1; // Group column
-let nameIndex = 0;  // Name column
-let leagueIndex = 2; // League column
+let groupIndex = 1;
+let nameIndex = 0;
 const customGroupOrder = ["Group1", "Group2", "Group3", "Group4"];
 
 // --- Load CSV ---
@@ -211,7 +199,6 @@ fetch('Sunday.csv')
     renderGroups(allRows);
   });
 
-// --- Populate dropdown ---
 function populateDropdown() {
   const unique = [...new Set(allRows.map(r => r[groupIndex]))];
   const ordered = customGroupOrder.concat(unique.filter(v => !customGroupOrder.includes(v)));
@@ -223,7 +210,6 @@ function populateDropdown() {
   });
 }
 
-// --- Render groups ---
 function renderGroups(rows) {
   container.innerHTML = '';
   const groups = rows.reduce((acc, row) => {
@@ -234,17 +220,13 @@ function renderGroups(rows) {
   }, {});
 
   const filterVal = selectionFilter.value;
-  const allGroupKeys = Object.keys(groups);
-  const remainingGroups = allGroupKeys.filter(g => !customGroupOrder.includes(g)).sort();
   const visibleKeys = filterVal
     ? [filterVal]
-    : [...customGroupOrder.filter(g => allGroupKeys.includes(g)), ...remainingGroups];
+    : [...customGroupOrder.filter(g => groups[g]), ...Object.keys(groups).filter(k => !customGroupOrder.includes(k)).sort()];
 
   visibleKeys.forEach(groupName => {
     const groupRows = groups[groupName];
-    if (!groupRows?.length) return;
-
-    groupRows.sort((a,b) => a[nameIndex].localeCompare(b[nameIndex]));
+    if (!groupRows) return;
 
     const section = document.createElement('section');
     const header = document.createElement('div');
@@ -257,40 +239,17 @@ function renderGroups(rows) {
 
     const table = document.createElement('table');
     const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-
-    const numTh = document.createElement('th');
-    numTh.textContent = "#";
-    headerRow.appendChild(numTh);
-
-    headers.forEach((h, i) => {
-      if(i !== groupIndex){
-        const th = document.createElement('th');
-        th.textContent = h;
-        headerRow.appendChild(th);
-      }
-    });
-    thead.appendChild(headerRow);
+    const trh = document.createElement('tr');
+    trh.innerHTML = `<th>#</th>${headers.map((h,i)=>i!==groupIndex?`<th>${h}</th>`:'').join('')}`;
+    thead.appendChild(trh);
     table.appendChild(thead);
 
     const tbody = document.createElement('tbody');
     groupRows.forEach((r, idx) => {
       const tr = document.createElement('tr');
-      const numTd = document.createElement('td');
-      numTd.textContent = idx + 1;
-      tr.appendChild(numTd);
-
-      r.forEach((c, i) => {
-        if(i !== groupIndex){
-          const td = document.createElement('td');
-          td.textContent = c;
-          td.setAttribute('data-label', headers[i]);
-          tr.appendChild(td);
-        }
-      });
+      tr.innerHTML = `<td>${idx+1}</td>` + r.map((c,i)=>i!==groupIndex?`<td>${c}</td>`:'').join('');
       tbody.appendChild(tr);
     });
-
     table.appendChild(tbody);
     wrapper.appendChild(table);
     section.appendChild(wrapper);
@@ -306,7 +265,7 @@ function renderGroups(rows) {
   });
 }
 
-// --- Search & Filter ---
+// --- Filters ---
 function applyFilters() {
   const q = search.value.toLowerCase();
   const sel = selectionFilter.value;
@@ -320,7 +279,7 @@ function applyFilters() {
 search.addEventListener('input', applyFilters);
 selectionFilter.addEventListener('change', applyFilters);
 
-// --- Export CSV ---
+// --- CSV Export ---
 exportBtn.addEventListener('click', () => {
   const rows = [];
   const headersNoGroup = ['#', ...headers.filter((_,i)=>i!==groupIndex)];
@@ -340,41 +299,27 @@ exportBtn.addEventListener('click', () => {
   link.click();
 });
 
-// --- Expand / Collapse All ---
-toggleGroupsBtn.addEventListener('click', () => {
-  const allGroups = container.querySelectorAll('.group-content');
-  const anyOpen = Array.from(allGroups).some(g => !g.classList.contains('hidden'));
-  allGroups.forEach(groupContent => {
-    const section = groupContent.parentElement;
-    const header = section.querySelector('.group-header span:last-child');
-    const count = groupContent.querySelectorAll('tbody tr').length;
-    if(anyOpen){
-      groupContent.classList.add('hidden');
-      header.textContent = `(${count}) ▲`;
-    } else {
-      groupContent.classList.remove('hidden');
-      header.textContent = `(${count}) ▼`;
-    }
-  });
-  toggleGroupsBtn.textContent = anyOpen ? 'Expand All':'Collapse All';
-});
-
-// --- Generate PDF ---
+// --- PDF Generation ---
 pdfBtn.addEventListener('click', async () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'pt', 'a4');
 
-  // === Load the logo ===
+  // === Load and get logo dimensions ===
   const logoUrl = 'images/logo.png';
-  let logoData = null;
+  let logoData = null, logoWidth = 0, logoHeight = 0;
   try {
-    const response = await fetch(logoUrl);
-    const blob = await response.blob();
-    const reader = new FileReader();
-    logoData = await new Promise((resolve) => {
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(blob);
-    });
+    const img = new Image();
+    img.src = logoUrl;
+    await img.decode();
+    const ratio = img.width / img.height;
+    logoHeight = 26; // fixed height
+    logoWidth = logoHeight * ratio; // proportional width
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    logoData = canvas.toDataURL('image/png');
   } catch (err) {
     console.warn("Logo not found or failed to load:", err);
   }
@@ -384,8 +329,6 @@ pdfBtn.addEventListener('click', async () => {
   const headerGap = 20;
   const leftMargin = 40;
   const rightMargin = 40;
-  const logoSize = 26;
-  const logoY = pageTopMargin - headerHeight + 8;
 
   const sections = Array.from(container.querySelectorAll('section'));
   let firstGroup = true;
@@ -405,68 +348,4 @@ pdfBtn.addEventListener('click', async () => {
     }
 
     if (logoData) {
-      doc.addImage(logoData, 'PNG', leftMargin - 10, logoY - 2, logoSize, logoSize);
-    }
-
-    doc.setFontSize(13);
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    const textY = pageTopMargin - headerHeight / 2 + 18;
-    doc.text(title, leftMargin + logoSize + 10, textY);
-
-    const textWidth = doc.getTextWidth(countText);
-    doc.text(countText, pageWidth - rightMargin - textWidth, textY);
-  }
-
-  function drawFooter(doc, pageNumber, totalPages) {
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
-  }
-
-  for (const section of sections) {
-    const visibleWrapper = section.querySelector('.group-content');
-    if (visibleWrapper?.classList.contains('hidden')) continue;
-
-    const groupTitle = section.querySelector('.group-header span:first-child').textContent;
-    const groupCount = section.querySelector('.group-header span:last-child').textContent;
-    const cleanCount = groupCount.replace(/[▲▼]/g, '').trim();
-
-    const headersNoGroup = ['#', ...headers.filter((_, i) => i !== groupIndex)];
-    const body = [];
-    section.querySelectorAll('tbody tr').forEach(tr => {
-      const row = Array.from(tr.children).map(td => td.textContent);
-      body.push(row);
-    });
-
-    if (!firstGroup) doc.addPage();
-    else firstGroup = false;
-
-    drawGradientHeader(doc, groupTitle, cleanCount);
-
-    doc.autoTable({
-      head: [headersNoGroup],
-      body,
-      startY: pageTopMargin + headerHeight + headerGap,
-      theme: 'grid',
-      headStyles: { fillColor: [239, 68, 68], halign: 'center', textColor: 255 },
-      styles: { fontSize: 9, cellPadding: 4 },
-      margin: { left: leftMargin, right: rightMargin, top: pageTopMargin + headerHeight + headerGap },
-      showHead: 'everyPage',
-      columnStyles: { 0: { cellWidth: 30 } },
-      didDrawPage: function (data) {
-        drawGradientHeader(doc, groupTitle, cleanCount);
-        const totalPages = doc.internal.getNumberOfPages();
-        drawFooter(doc, data.pageNumber, totalPages);
-      }
-    });
-  }
-
-  doc.save('TeTaiHouTeams.pdf');
-});
-</script>
-
-</body>
-</html>
+      const logoY = pageTopMargin - headerHeight + 10 + (header
