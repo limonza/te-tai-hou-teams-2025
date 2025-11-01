@@ -156,30 +156,30 @@ th::after {
 
 <body>
 <div id="page-wrapper">
-  <header>
-    <a href="https://www.poriruaheatbasketball.org" target="_blank">
-      <img src="images/logo.png" alt="Porirua Heat Logo">
-    </a>
-    <h1>CLUB REGISTRATIONS 2025 - TERM 4</h1>
-  </header>
+<header>
+  <a href="https://www.poriruaheatbasketball.org" target="_blank">
+    <img src="images/logo.png" alt="Porirua Heat Logo">
+  </a>
+  <h1>CLUB REGISTRATIONS 2025 - TERM 4</h1>
+</header>
 
-  <div class="controls">
-    <input id="search" type="text" placeholder="Search...">
-    <select id="selectionFilter">
-      <option value="">All Teams</option>
-    </select>
-    <button id="export">Export CSV</button>
-    <button id="toggleGroups">Collapse All</button>
-    <button id="pdfBtn">Generate PDF</button>
-  </div>
+<div class="controls">
+  <input id="search" type="text" placeholder="Search...">
+  <select id="selectionFilter">
+    <option value="">All Teams</option>
+  </select>
+  <button id="export">Export CSV</button>
+  <button id="toggleGroups">Collapse All</button>
+  <button id="pdfBtn">Generate PDF</button>
+</div>
 
-  <div style="margin-top: 6px;">
-    <a href="https://limonza.github.io/te-tai-hou-teams-2025" style="font-size: 1em; color: #2b6cb0; text-decoration: underline;">
-      Te Tai Hou Teams
-    </a>
-  </div>
+<div style="margin-top: 6px;">
+  <a href="https://limonza.github.io/te-tai-hou-teams-2025" style="font-size: 1em; color: #2b6cb0; text-decoration: underline;">
+    Te Tai Hou Teams
+  </a>
+</div>
 
-  <div id="table-container"></div>
+<div id="table-container"></div>
 </div>
 
 <!-- jsPDF + AutoTable -->
@@ -264,13 +264,12 @@ function renderGroups(rows) {
     headerRow.appendChild(numTh);
 
     headers.forEach((h, i) => {
-      if (i !== groupIndex) {
+      if(i !== groupIndex){
         const th = document.createElement('th');
         th.textContent = h;
         headerRow.appendChild(th);
       }
     });
-
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
@@ -280,8 +279,9 @@ function renderGroups(rows) {
       const numTd = document.createElement('td');
       numTd.textContent = idx + 1;
       tr.appendChild(numTd);
+
       r.forEach((c, i) => {
-        if (i !== groupIndex) {
+        if(i !== groupIndex){
           const td = document.createElement('td');
           td.textContent = c;
           td.setAttribute('data-label', headers[i]);
@@ -327,7 +327,7 @@ exportBtn.addEventListener('click', () => {
   rows.push(headersNoGroup.join(','));
   container.querySelectorAll('section').forEach(section => {
     const wrapper = section.querySelector('.group-content');
-    if (wrapper.classList.contains('hidden')) return;
+    if(wrapper.classList.contains('hidden')) return;
     wrapper.querySelectorAll('tbody tr').forEach(tr => {
       const cells = Array.from(tr.children).map(td => td.textContent);
       rows.push(cells.join(','));
@@ -348,7 +348,7 @@ toggleGroupsBtn.addEventListener('click', () => {
     const section = groupContent.parentElement;
     const header = section.querySelector('.group-header span:last-child');
     const count = groupContent.querySelectorAll('tbody tr').length;
-    if (anyOpen) {
+    if(anyOpen){
       groupContent.classList.add('hidden');
       header.textContent = `(${count}) ▲`;
     } else {
@@ -356,30 +356,83 @@ toggleGroupsBtn.addEventListener('click', () => {
       header.textContent = `(${count}) ▼`;
     }
   });
-  toggleGroupsBtn.textContent = anyOpen ? 'Expand All' : 'Collapse All';
+  toggleGroupsBtn.textContent = anyOpen ? 'Expand All':'Collapse All';
 });
 
 // --- Generate PDF ---
-pdfBtn.addEventListener('click', () => {
+pdfBtn.addEventListener('click', async () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'pt', 'a4');
 
-  const pageTopMargin = 50;
-  const headerHeight = 24;
-  const headerGap = 18;
+  // === Load the logo ===
+  const logoUrl = 'images/logo.png';
+  let logoData = null;
+  try {
+    const response = await fetch(logoUrl);
+    const blob = await response.blob();
+    const reader = new FileReader();
+    logoData = await new Promise((resolve) => {
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.warn("Logo not found or failed to load:", err);
+  }
+
+  const pageTopMargin = 70;
+  const headerHeight = 26;
+  const headerGap = 20;
   const leftMargin = 40;
   const rightMargin = 40;
+  const logoSize = 26;
+  const logoY = pageTopMargin - headerHeight + 8;
 
   const sections = Array.from(container.querySelectorAll('section'));
   let firstGroup = true;
 
-  sections.forEach((section) => {
+  function drawGradientHeader(doc, title, countText) {
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const gradientSteps = 40;
+    for (let i = 0; i < gradientSteps; i++) {
+      const ratio = i / gradientSteps;
+      const r = Math.round(239 + (249 - 239) * ratio);
+      const g = Math.round(68 + (115 - 68) * ratio);
+      const b = Math.round(68 + (22 - 68) * ratio);
+      const x = (pageWidth / gradientSteps) * i;
+      const w = pageWidth / gradientSteps;
+      doc.setFillColor(r, g, b);
+      doc.rect(x, pageTopMargin - headerHeight + 10, w, headerHeight, 'F');
+    }
+
+    if (logoData) {
+      doc.addImage(logoData, 'PNG', leftMargin - 10, logoY - 2, logoSize, logoSize);
+    }
+
+    doc.setFontSize(13);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    const textY = pageTopMargin - headerHeight / 2 + 18;
+    doc.text(title, leftMargin + logoSize + 10, textY);
+
+    const textWidth = doc.getTextWidth(countText);
+    doc.text(countText, pageWidth - rightMargin - textWidth, textY);
+  }
+
+  function drawFooter(doc, pageNumber, totalPages) {
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
+  }
+
+  for (const section of sections) {
     const visibleWrapper = section.querySelector('.group-content');
-    if (visibleWrapper?.classList.contains('hidden')) return;
+    if (visibleWrapper?.classList.contains('hidden')) continue;
 
     const groupTitle = section.querySelector('.group-header span:first-child').textContent;
     const groupCount = section.querySelector('.group-header span:last-child').textContent;
-    const cleanCount = groupCount.replace('▼', '').replace('▲', '').trim();
+    const cleanCount = groupCount.replace(/[▲▼]/g, '').trim();
 
     const headersNoGroup = ['#', ...headers.filter((_, i) => i !== groupIndex)];
     const body = [];
@@ -391,6 +444,8 @@ pdfBtn.addEventListener('click', () => {
     if (!firstGroup) doc.addPage();
     else firstGroup = false;
 
+    drawGradientHeader(doc, groupTitle, cleanCount);
+
     doc.autoTable({
       head: [headersNoGroup],
       body,
@@ -398,52 +453,20 @@ pdfBtn.addEventListener('click', () => {
       theme: 'grid',
       headStyles: { fillColor: [239, 68, 68], halign: 'center', textColor: 255 },
       styles: { fontSize: 9, cellPadding: 4 },
-      margin: { left: leftMargin, right: rightMargin },
+      margin: { left: leftMargin, right: rightMargin, top: pageTopMargin + headerHeight + headerGap },
       showHead: 'everyPage',
       columnStyles: { 0: { cellWidth: 30 } },
-      didDrawPage: function () {
-        const pageWidth = doc.internal.pageSize.getWidth();
-
-        const gradientSteps = 40;
-        for (let i = 0; i < gradientSteps; i++) {
-          const ratio = i / gradientSteps;
-          const r = Math.round(239 + (249 - 239) * ratio);
-          const g = Math.round(68 + (115 - 68) * ratio);
-          const b = Math.round(68 + (22 - 68) * ratio);
-          const x = (pageWidth / gradientSteps) * i;
-          const w = pageWidth / gradientSteps;
-          doc.setFillColor(r, g, b);
-          doc.rect(x, pageTopMargin - headerHeight + 4, w, headerHeight, 'F');
-        }
-
-        doc.setFontSize(13);
-        doc.setTextColor(255, 255, 255);
-        doc.setFont('helvetica', 'bold');
-        doc.text(groupTitle, leftMargin, pageTopMargin + 5);
-
-        const countText = cleanCount;
-        const textWidth = doc.getTextWidth(countText);
-        doc.text(countText, pageWidth - rightMargin - textWidth, pageTopMargin + 5);
-
-        doc.setDrawColor(255, 255, 255);
-        doc.setLineWidth(0.3);
-        doc.line(leftMargin, pageTopMargin + headerHeight + 2, pageWidth - rightMargin, pageTopMargin + headerHeight + 2);
+      didDrawPage: function (data) {
+        drawGradientHeader(doc, groupTitle, cleanCount);
+        const totalPages = doc.internal.getNumberOfPages();
+        drawFooter(doc, data.pageNumber, totalPages);
       }
     });
-  });
-
-  const totalPages = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-    doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
   }
 
   doc.save('TeTaiHouTeams.pdf');
 });
 </script>
+
 </body>
 </html>
