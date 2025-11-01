@@ -156,30 +156,30 @@ th::after {
 
 <body>
 <div id="page-wrapper">
-<header>
-  <a href="https://www.poriruaheatbasketball.org" target="_blank">
-    <img src="images/logo.png" alt="Porirua Heat Logo">
-  </a>
-  <h1>CLUB REGISTRATIONS 2025 - TERM 4</h1>
-</header>
+  <header>
+    <a href="https://www.poriruaheatbasketball.org" target="_blank">
+      <img src="images/logo.png" alt="Porirua Heat Logo">
+    </a>
+    <h1>CLUB REGISTRATIONS 2025 - TERM 4</h1>
+  </header>
 
-<div class="controls">
-  <input id="search" type="text" placeholder="Search...">
-  <select id="selectionFilter">
-    <option value="">All Teams</option>
-  </select>
-  <button id="export">Export CSV</button>
-  <button id="toggleGroups">Collapse All</button>
-  <button id="pdfBtn">Generate PDF</button>
-</div>
+  <div class="controls">
+    <input id="search" type="text" placeholder="Search...">
+    <select id="selectionFilter">
+      <option value="">All Teams</option>
+    </select>
+    <button id="export">Export CSV</button>
+    <button id="toggleGroups">Collapse All</button>
+    <button id="pdfBtn">Generate PDF</button>
+  </div>
 
-<div style="margin-top: 6px;">
-  <a href="https://limonza.github.io/te-tai-hou-teams-2025" style="font-size: 1em; color: #2b6cb0; text-decoration: underline;">
-    Te Tai Hou Teams
-  </a>
-</div>
+  <div style="margin-top: 6px;">
+    <a href="https://limonza.github.io/te-tai-hou-teams-2025" style="font-size: 1em; color: #2b6cb0; text-decoration: underline;">
+      Te Tai Hou Teams
+    </a>
+  </div>
 
-<div id="table-container"></div>
+  <div id="table-container"></div>
 </div>
 
 <!-- jsPDF + AutoTable -->
@@ -226,7 +226,6 @@ function populateDropdown() {
 // --- Render groups ---
 function renderGroups(rows) {
   container.innerHTML = '';
-
   const groups = rows.reduce((acc, row) => {
     const key = row[groupIndex];
     if (!acc[key]) acc[key] = [];
@@ -245,7 +244,6 @@ function renderGroups(rows) {
     const groupRows = groups[groupName];
     if (!groupRows?.length) return;
 
-    // Sort rows by Name
     groupRows.sort((a,b) => a[nameIndex].localeCompare(b[nameIndex]));
 
     const section = document.createElement('section');
@@ -261,202 +259,25 @@ function renderGroups(rows) {
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
 
-    // Add row number column first
     const numTh = document.createElement('th');
     numTh.textContent = "#";
     headerRow.appendChild(numTh);
 
-    // Build headers skipping Group column
     headers.forEach((h, i) => {
-      if(i !== groupIndex){
+      if (i !== groupIndex) {
         const th = document.createElement('th');
         th.textContent = h;
         headerRow.appendChild(th);
       }
     });
+
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
     const tbody = document.createElement('tbody');
     groupRows.forEach((r, idx) => {
       const tr = document.createElement('tr');
-      // Row number
       const numTd = document.createElement('td');
       numTd.textContent = idx + 1;
       tr.appendChild(numTd);
-
-      r.forEach((c, i) => {
-        if(i !== groupIndex){
-          const td = document.createElement('td');
-          td.textContent = c;
-          td.setAttribute('data-label', headers[i]);
-          tr.appendChild(td);
-        }
-      });
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(tbody);
-    wrapper.appendChild(table);
-    section.appendChild(wrapper);
-    container.appendChild(section);
-
-    header.addEventListener('click', () => {
-      wrapper.classList.toggle('hidden');
-      const arrow = header.querySelector('span:last-child');
-      arrow.textContent = wrapper.classList.contains('hidden')
-        ? `(${groupRows.length}) ▲`
-        : `(${groupRows.length}) ▼`;
-    });
-  });
-}
-
-// --- Search & Filter ---
-function applyFilters() {
-  const q = search.value.toLowerCase();
-  const sel = selectionFilter.value;
-  const filtered = allRows.filter(r => {
-    const matchesSearch = r.some(c => c.toLowerCase().includes(q));
-    const matchesSel = !sel || r[groupIndex] === sel;
-    return matchesSearch && matchesSel;
-  });
-  renderGroups(filtered);
-}
-search.addEventListener('input', applyFilters);
-selectionFilter.addEventListener('change', applyFilters);
-
-// --- Export CSV ---
-exportBtn.addEventListener('click', () => {
-  const rows = [];
-  const headersNoGroup = ['#', ...headers.filter((_,i)=>i!==groupIndex)];
-  rows.push(headersNoGroup.join(','));
-  container.querySelectorAll('section').forEach(section => {
-    const wrapper = section.querySelector('.group-content');
-    if(wrapper.classList.contains('hidden')) return;
-    wrapper.querySelectorAll('tbody tr').forEach(tr => {
-      const cells = Array.from(tr.children).map(td => td.textContent);
-      rows.push(cells.join(','));
-    });
-  });
-  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'filtered_data.csv';
-  link.click();
-});
-
-// --- Expand / Collapse All ---
-toggleGroupsBtn.addEventListener('click', () => {
-  const allGroups = container.querySelectorAll('.group-content');
-  const anyOpen = Array.from(allGroups).some(g => !g.classList.contains('hidden'));
-
-  allGroups.forEach(groupContent => {
-    const section = groupContent.parentElement;
-    const header = section.querySelector('.group-header span:last-child');
-    const count = groupContent.querySelectorAll('tbody tr').length;
-    if(anyOpen){
-      groupContent.classList.add('hidden');
-      header.textContent = `(${count}) ▲`;
-    } else {
-      groupContent.classList.remove('hidden');
-      header.textContent = `(${count}) ▼`;
-    }
-  });
-
-  toggleGroupsBtn.textContent = anyOpen ? 'Expand All':'Collapse All';
-});
-
-// --- Generate PDF ---
-pdfBtn.addEventListener('click', () => {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p','pt','a4');
-
-  const pageTopMargin = 50;    // where group title will be placed
-  const contentTopOffset = 20; // gap between group title and table
-  const leftMargin = 40;
-  const rightMargin = 40;
-
-  const sections = Array.from(container.querySelectorAll('section'));
-  let firstGroup = true;
-
-  // We'll create each group's table in sequence. For each group:
-  //  - force a new page (except for the very first group)
-  //  - draw the group title at the top of every page that belongs to the group's table
-  //  - rely on autoTable to break the table across pages, while our didDrawPage draws the group title on each page
-  sections.forEach((section, sIndex) => {
-    const visibleWrapper = section.querySelector('.group-content');
-    if (visibleWrapper?.classList.contains('hidden')) return; // skip collapsed groups
-
-    const groupTitle = section.querySelector('.group-header span:first-child').textContent;
-
-    // Build headers for PDF from original headers array to avoid duplication
-    const headersNoGroup = ['#', ...headers.filter((_,i)=>i!==groupIndex)];
-
-    // Build body rows: read from DOM so numbering matches displayed order
-    const body = [];
-    section.querySelectorAll('tbody tr').forEach(tr => {
-      const row = Array.from(tr.children).map(td => td.textContent);
-      body.push(row);
-    });
-
-    // start a new page for every group except the first (ensures group starts at top)
-    if (!firstGroup) {
-      doc.addPage();
-    } else {
-      firstGroup = false;
-    }
-
-    // draw group title at top of the current (new) page
-    doc.setFontSize(14);
-    doc.setTextColor(26,54,93);
-    doc.text(groupTitle, leftMargin, pageTopMargin);
-
-    // Use autoTable and in didDrawPage draw the group's title at the top of each page for this table.
-    // The didDrawPage here is scoped to this specific autoTable call and will be called for every page
-    // while this table is being rendered.
-    doc.autoTable({
-      head: [headersNoGroup],
-      body: body,
-      startY: pageTopMargin + contentTopOffset,
-      theme: 'grid',
-      headStyles: { fillColor: [239, 68, 68], halign: 'center' },
-      styles: { fontSize: 9, cellPadding: 4 },
-      margin: { left: leftMargin, right: rightMargin, top: pageTopMargin },
-      showHead: 'everyPage',
-      columnStyles: {
-        0: { cellWidth: 30 }, // number column narrow
-        // default widths for others (autocalc)
-      },
-      didDrawPage: function (data) {
-        // Draw group title at top of the page for this group's pages:
-        // We draw it on every page that is part of this autoTable rendering.
-        doc.setFontSize(14);
-        doc.setTextColor(26,54,93);
-        doc.text(groupTitle, leftMargin, pageTopMargin);
-
-        // Note: do NOT draw page numbers here (to avoid overlap). We'll add final "Page X of Y"
-        // after all tables are produced.
-      }
-    });
-
-    // After autoTable for this group completes, the "cursor" is at doc.lastAutoTable.finalY
-    // We don't need to manually manage startY for the next group because we force new page for next group.
-  });
-
-  // After all groups/tables rendered - add page numbers "Page X of Y" centered at bottom of each page
-  const totalPages = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    doc.setFontSize(9);
-    doc.setTextColor(0,0,0);
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-    doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
-  }
-
-  doc.save('TeTaiHouTeams.pdf');
-});
-</script>
-
-</body>
-</html>
+      r.forEach((c, i) =
