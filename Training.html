@@ -262,6 +262,11 @@ function renderGroups(rows) {
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
 
+    // Add row number column first
+    const numTh = document.createElement('th');
+    numTh.textContent = "#";
+    headerRow.appendChild(numTh);
+
     // Build headers skipping Group column
     headers.forEach((h, i) => {
       if(i !== groupIndex){
@@ -274,8 +279,13 @@ function renderGroups(rows) {
     table.appendChild(thead);
 
     const tbody = document.createElement('tbody');
-    groupRows.forEach(r => {
+    groupRows.forEach((r, idx) => {
       const tr = document.createElement('tr');
+      // Row number
+      const numTd = document.createElement('td');
+      numTd.textContent = idx + 1;
+      tr.appendChild(numTd);
+
       r.forEach((c, i) => {
         if(i !== groupIndex){
           const td = document.createElement('td');
@@ -319,7 +329,7 @@ selectionFilter.addEventListener('change', applyFilters);
 // --- Export CSV ---
 exportBtn.addEventListener('click', () => {
   const rows = [];
-  const headersNoGroup = headers.filter((_,i)=>i!==groupIndex);
+  const headersNoGroup = ['#', ...headers.filter((_,i)=>i!==groupIndex)];
   rows.push(headersNoGroup.join(','));
   container.querySelectorAll('section').forEach(section => {
     const wrapper = section.querySelector('.group-content');
@@ -361,17 +371,20 @@ toggleGroupsBtn.addEventListener('click', () => {
 pdfBtn.addEventListener('click', () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p','pt','a4');
-  let startY = 40;
+  let startY = 60;
+  let pageHeight = doc.internal.pageSize.height;
+  let pageCount = 0;
 
   const sections = container.querySelectorAll('section');
   sections.forEach(section => {
     const groupTitle = section.querySelector('.group-header span:first-child').textContent;
 
-    doc.setFontSize(12);
+    doc.setFontSize(14);
+    doc.setTextColor(26,54,93);
     doc.text(groupTitle, 40, startY);
 
     // Headers skipping Group
-    const headersNoGroup = [];
+    const headersNoGroup = ['#'];
     section.querySelectorAll('thead th').forEach(th => headersNoGroup.push(th.textContent));
 
     const body = [];
@@ -386,17 +399,37 @@ pdfBtn.addEventListener('click', () => {
       body: body,
       startY: startY + 20,
       theme: 'grid',
-      headStyles: { fillColor: [239, 68, 68] },
-      styles: { fontSize: 10 },
+      headStyles: { fillColor: [239, 68, 68], halign: 'center' },
+      styles: { fontSize: 9 },
       margin: { left: 20, right: 20 },
       showHead: 'everyPage',
-      columnStyles: {
-        0: { cellWidth: 180 }, // Name
-        1: { cellWidth: 180 }  // League
-      },
-      didDrawPage: (data) => { startY = data.cursor.y + 20; }
+      didDrawPage: (data) => {
+        pageCount++;
+        const pageSize = doc.internal.pageSize;
+        const pageWidth = pageSize.width;
+        const pageHeight = pageSize.height;
+        doc.setFontSize(9);
+        const pageText = `Page ${doc.internal.getNumberOfPages()}`;
+        doc.text(pageText, pageWidth / 2, pageHeight - 20, { align: 'center' });
+      }
     });
+
+    startY = doc.lastAutoTable.finalY + 30;
+    if (startY > pageHeight - 100) {
+      doc.addPage();
+      startY = 60;
+    }
   });
+
+  // Add total page numbers after table generation
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(9);
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
+  }
 
   doc.save('TeTaiHouTeams.pdf');
 });
