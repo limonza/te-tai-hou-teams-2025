@@ -185,7 +185,6 @@ th::after {
 <!-- jsPDF + AutoTable -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
 <script>
 const search = document.getElementById('search');
 const selectionFilter = document.getElementById('selectionFilter');
@@ -371,61 +370,85 @@ toggleGroupsBtn.addEventListener('click', () => {
 pdfBtn.addEventListener('click', () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p','pt','a4');
-  let startY = 60;
-  let pageHeight = doc.internal.pageSize.height;
-  let pageCount = 0;
 
-  const sections = container.querySelectorAll('section');
-  sections.forEach(section => {
+  const pageTopMargin = 50;    // where group title will be placed
+  const contentTopOffset = 20; // gap between group title and table
+  const leftMargin = 40;
+  const rightMargin = 40;
+
+  const sections = Array.from(container.querySelectorAll('section'));
+  let firstGroup = true;
+
+  // We'll create each group's table in sequence. For each group:
+  //  - force a new page (except for the very first group)
+  //  - draw the group title at the top of every page that belongs to the group's table
+  //  - rely on autoTable to break the table across pages, while our didDrawPage draws the group title on each page
+  sections.forEach((section, sIndex) => {
+    const visibleWrapper = section.querySelector('.group-content');
+    if (visibleWrapper?.classList.contains('hidden')) return; // skip collapsed groups
+
     const groupTitle = section.querySelector('.group-header span:first-child').textContent;
 
-    doc.setFontSize(14);
-    doc.setTextColor(26,54,93);
-    doc.text(groupTitle, 40, startY);
+    // Build headers for PDF from original headers array to avoid duplication
+    const headersNoGroup = ['#', ...headers.filter((_,i)=>i!==groupIndex)];
 
-    // Headers skipping Group
-    const headersNoGroup = ['#'];
-    section.querySelectorAll('thead th').forEach(th => headersNoGroup.push(th.textContent));
-
+    // Build body rows: read from DOM so numbering matches displayed order
     const body = [];
     section.querySelectorAll('tbody tr').forEach(tr => {
-      const row = [];
-      tr.querySelectorAll('td').forEach(td => row.push(td.textContent));
+      const row = Array.from(tr.children).map(td => td.textContent);
       body.push(row);
     });
 
+    // start a new page for every group except the first (ensures group starts at top)
+    if (!firstGroup) {
+      doc.addPage();
+    } else {
+      firstGroup = false;
+    }
+
+    // draw group title at top of the current (new) page
+    doc.setFontSize(14);
+    doc.setTextColor(26,54,93);
+    doc.text(groupTitle, leftMargin, pageTopMargin);
+
+    // Use autoTable and in didDrawPage draw the group's title at the top of each page for this table.
+    // The didDrawPage here is scoped to this specific autoTable call and will be called for every page
+    // while this table is being rendered.
     doc.autoTable({
       head: [headersNoGroup],
       body: body,
-      startY: startY + 20,
+      startY: pageTopMargin + contentTopOffset,
       theme: 'grid',
       headStyles: { fillColor: [239, 68, 68], halign: 'center' },
-      styles: { fontSize: 9 },
-      margin: { left: 20, right: 20 },
+      styles: { fontSize: 9, cellPadding: 4 },
+      margin: { left: leftMargin, right: rightMargin, top: pageTopMargin },
       showHead: 'everyPage',
-      didDrawPage: (data) => {
-        pageCount++;
-        const pageSize = doc.internal.pageSize;
-        const pageWidth = pageSize.width;
-        const pageHeight = pageSize.height;
-        doc.setFontSize(9);
-        const pageText = `Page ${doc.internal.getNumberOfPages()}`;
-        doc.text(pageText, pageWidth / 2, pageHeight - 20, { align: 'center' });
+      columnStyles: {
+        0: { cellWidth: 30 }, // number column narrow
+        // default widths for others (autocalc)
+      },
+      didDrawPage: function (data) {
+        // Draw group title at top of the page for this group's pages:
+        // We draw it on every page that is part of this autoTable rendering.
+        doc.setFontSize(14);
+        doc.setTextColor(26,54,93);
+        doc.text(groupTitle, leftMargin, pageTopMargin);
+
+        // Note: do NOT draw page numbers here (to avoid overlap). We'll add final "Page X of Y"
+        // after all tables are produced.
       }
     });
 
-    startY = doc.lastAutoTable.finalY + 30;
-    if (startY > pageHeight - 100) {
-      doc.addPage();
-      startY = 60;
-    }
+    // After autoTable for this group completes, the "cursor" is at doc.lastAutoTable.finalY
+    // We don't need to manually manage startY for the next group because we force new page for next group.
   });
 
-  // Add total page numbers after table generation
+  // After all groups/tables rendered - add page numbers "Page X of Y" centered at bottom of each page
   const totalPages = doc.internal.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFontSize(9);
+    doc.setTextColor(0,0,0);
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
     doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
@@ -434,5 +457,6 @@ pdfBtn.addEventListener('click', () => {
   doc.save('TeTaiHouTeams.pdf');
 });
 </script>
+
 </body>
 </html>
