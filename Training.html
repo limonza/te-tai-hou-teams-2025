@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SUNDAY TRAINING SESSION TERM 4 - 2025</title>
-
 <style>
 body {
   font-family: "Segoe UI", Roboto, sans-serif;
@@ -15,12 +14,10 @@ body {
   display: flex;
   justify-content: center;
 }
-
 #page-wrapper {
   width: 100%;
   max-width: 900px;
 }
-
 header {
   display: flex;
   align-items: center;
@@ -28,19 +25,16 @@ header {
   gap: 12px;
   margin-bottom: 24px;
 }
-
 header img {
   height: 60px;
-  width: auto; /* Maintain aspect ratio */
+  width: auto; /* maintain aspect ratio */
   border-radius: 50%;
 }
-
 header h1 {
   font-size: 1.8em;
   margin: 0;
   color: #1a365d;
 }
-
 .controls {
   display: flex;
   justify-content: center;
@@ -48,28 +42,26 @@ header h1 {
   flex-wrap: wrap;
   margin-bottom: 12px;
 }
-
-.controls input, .controls select, .controls button {
+.controls input,
+.controls select,
+.controls button {
   padding: 6px 10px;
   border: 1px solid #cbd5e0;
   border-radius: 6px;
   font-size: 0.95em;
 }
-
 .controls button {
   background-color: #2b6cb0;
   color: white;
   cursor: pointer;
 }
-
 section {
   margin-bottom: 1rem;
   border-radius: 0.75rem;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
-
 .group-header {
   font-weight: 600;
   font-size: 1.1rem;
@@ -80,19 +72,16 @@ section {
   justify-content: space-between;
   align-items: center;
 }
-
 .group-content {
   padding: 0;
   overflow-x: auto;
 }
-
 table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
   table-layout: fixed;
 }
-
 thead th {
   background: #f3f4f6;
   position: sticky;
@@ -101,7 +90,6 @@ thead th {
   padding: 0.5rem;
   text-align: left;
 }
-
 tbody td {
   border-top: 1px solid #e5e7eb;
   padding: 0.4rem 0.5rem;
@@ -114,13 +102,13 @@ tbody td {
 <div id="page-wrapper">
   <header>
     <a href="https://www.poriruaheatbasketball.org" target="_blank">
-      <img src="images/logo.png" alt="Porirua Heat Logo">
+      <img src="images/logo.png" alt="Porirua Heat Logo" />
     </a>
     <h1>SUNDAY TRAINING SESSION TERM 4 - 2025</h1>
   </header>
 
   <div class="controls">
-    <input id="search" type="text" placeholder="Search...">
+    <input id="search" type="text" placeholder="Search..." />
     <select id="selectionFilter"><option value="">All Groups</option></select>
     <button id="pdfBtn">Generate PDF</button>
   </div>
@@ -128,45 +116,40 @@ tbody td {
   <div id="table-container"></div>
 </div>
 
-<!-- Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
 
 <script>
-const search = document.getElementById('search');
-const selectionFilter = document.getElementById('selectionFilter');
-const container = document.getElementById('table-container');
+const search = document.getElementById("search");
+const selectionFilter = document.getElementById("selectionFilter");
+const container = document.getElementById("table-container");
 let headers = [];
 let allRows = [];
-const groupIndex = 1;  // Group column index
-const nameIndex = 0;   // Name column index
-const customGroupOrder = []; // Optionally define fixed order if desired
+const groupIndex = 1;
+const nameIndex = 0;
 
-// === Load CSV and Render ===
-fetch('Sunday.csv')
+fetch("Sunday.csv")
   .then(res => res.text())
   .then(text => {
-    const lines = text.trim().split('\n').map(l => l.split(','));
+    const lines = text.trim().split("\n").map(l => l.split(","));
     headers = lines[0].map(h => h.trim());
     allRows = lines.slice(1).map(r => r.map(c => c.trim()));
     populateDropdown();
     renderGroups(allRows);
   });
 
-// === Populate Dropdown ===
 function populateDropdown() {
   const unique = [...new Set(allRows.map(r => r[groupIndex]))];
   unique.forEach(v => {
-    const opt = document.createElement('option');
+    const opt = document.createElement("option");
     opt.value = v;
     opt.textContent = v;
     selectionFilter.appendChild(opt);
   });
 }
 
-// === Render Grouped Tables ===
 function renderGroups(rows) {
-  container.innerHTML = '';
+  container.innerHTML = "";
   const groups = rows.reduce((acc, row) => {
     const key = row[groupIndex];
     if (!acc[key]) acc[key] = [];
@@ -181,28 +164,27 @@ function renderGroups(rows) {
     const groupRows = groups[groupName];
     if (!groupRows) return;
 
-    groupRows.sort((a,b) => a[nameIndex].localeCompare(b[nameIndex]));
+    groupRows.sort((a, b) => a[nameIndex].localeCompare(b[nameIndex]));
 
-    const section = document.createElement('section');
-    const header = document.createElement('div');
-    header.className = 'group-header';
+    const section = document.createElement("section");
+    const header = document.createElement("div");
+    header.className = "group-header";
     header.innerHTML = `<span>${groupName}</span><span>${groupRows.length} Records</span>`;
     section.appendChild(header);
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'group-content';
+    const wrapper = document.createElement("div");
+    wrapper.className = "group-content";
+    const table = document.createElement("table");
 
-    const table = document.createElement('table');
-    const thead = document.createElement('thead');
-    const tr = document.createElement('tr');
-
-    const numTh = document.createElement('th');
-    numTh.textContent = '#';
+    const thead = document.createElement("thead");
+    const tr = document.createElement("tr");
+    const numTh = document.createElement("th");
+    numTh.textContent = "#";
     tr.appendChild(numTh);
 
     headers.forEach((h, i) => {
       if (i !== groupIndex) {
-        const th = document.createElement('th');
+        const th = document.createElement("th");
         th.textContent = h;
         tr.appendChild(th);
       }
@@ -211,21 +193,22 @@ function renderGroups(rows) {
     thead.appendChild(tr);
     table.appendChild(thead);
 
-    const tbody = document.createElement('tbody');
+    const tbody = document.createElement("tbody");
     groupRows.forEach((r, idx) => {
-      const rowTr = document.createElement('tr');
-      const numTd = document.createElement('td');
+      const rowTr = document.createElement("tr");
+      const numTd = document.createElement("td");
       numTd.textContent = idx + 1;
       rowTr.appendChild(numTd);
       r.forEach((c, i) => {
         if (i !== groupIndex) {
-          const td = document.createElement('td');
+          const td = document.createElement("td");
           td.textContent = c;
           rowTr.appendChild(td);
         }
       });
       tbody.appendChild(rowTr);
     });
+
     table.appendChild(tbody);
     wrapper.appendChild(table);
     section.appendChild(wrapper);
@@ -233,7 +216,6 @@ function renderGroups(rows) {
   });
 }
 
-// === Search and Filter ===
 function applyFilters() {
   const q = search.value.toLowerCase();
   const sel = selectionFilter.value;
@@ -244,45 +226,49 @@ function applyFilters() {
   });
   renderGroups(filtered);
 }
-search.addEventListener('input', applyFilters);
-selectionFilter.addEventListener('change', applyFilters);
+search.addEventListener("input", applyFilters);
+selectionFilter.addEventListener("change", applyFilters);
 
-// === PDF Generation ===
-document.getElementById('pdfBtn').addEventListener('click', async () => {
+// === PDF Export ===
+document.getElementById("pdfBtn").addEventListener("click", async () => {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p', 'pt', 'a4');
+  const doc = new jsPDF("p", "pt", "a4");
 
-  const logoUrl = 'images/logo.png';
-  let logoData = null, logoAspectRatio = 1;
+  const logoUrl = "images/logo.png";
+  let logoData = null,
+    logoAspectRatio = 1;
 
   try {
     const response = await fetch(logoUrl);
     const blob = await response.blob();
-    logoData = await new Promise((resolve) => {
+    logoData = await new Promise(resolve => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result);
       reader.readAsDataURL(blob);
     });
-    await new Promise((resolve) => {
+    await new Promise(resolve => {
       const img = new Image();
-      img.onload = function () {
+      img.onload = function() {
         logoAspectRatio = this.width / this.height;
         resolve();
       };
       img.src = logoData;
     });
   } catch (err) {
-    console.warn("Logo not found or failed to load:", err);
+    console.warn("Logo not found:", err);
   }
 
-  const sections = Array.from(container.querySelectorAll('section'));
+  const sections = Array.from(container.querySelectorAll("section"));
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const leftMargin = 40, rightMargin = 40;
-  const headerHeight = 26, headerGap = 20, pageTopMargin = 70;
-  let firstGroup = true;
+  const leftMargin = 40,
+    rightMargin = 40;
+  const groupHeaderHeight = 26;
+  const headerGap = 20;
+  const firstPageTopMargin = 70;
+  const contPageTopMargin = 50;
 
-  function drawGradientHeader(title, countText) {
+  function drawGradientHeader(title, countText, yOffset, includeLogo) {
     const gradientSteps = 40;
     for (let i = 0; i < gradientSteps; i++) {
       const ratio = i / gradientSteps;
@@ -292,20 +278,20 @@ document.getElementById('pdfBtn').addEventListener('click', async () => {
       const x = (pageWidth / gradientSteps) * i;
       const w = pageWidth / gradientSteps;
       doc.setFillColor(r, g, b);
-      doc.rect(x, pageTopMargin - headerHeight + 10, w, headerHeight, 'F');
+      doc.rect(x, yOffset, w, groupHeaderHeight, "F");
     }
 
-    if (logoData) {
+    if (includeLogo && logoData) {
       const logoMaxHeight = 24;
       const logoWidth = logoMaxHeight * logoAspectRatio;
-      doc.addImage(logoData, 'PNG', leftMargin - 10, pageTopMargin - headerHeight + 12, logoWidth, logoMaxHeight);
+      doc.addImage(logoData, "PNG", leftMargin - 10, yOffset + 2, logoWidth, logoMaxHeight);
     }
 
     doc.setFontSize(13);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(255, 255, 255);
-    const textY = pageTopMargin - headerHeight / 2 + 18;
-    doc.text(title, leftMargin + 60, textY);
+    const textY = yOffset + 17;
+    doc.text(title, leftMargin + (includeLogo ? 60 : 0), textY);
     const textWidth = doc.getTextWidth(countText);
     doc.text(countText, pageWidth - rightMargin - textWidth, textY);
   }
@@ -313,44 +299,47 @@ document.getElementById('pdfBtn').addEventListener('click', async () => {
   function drawFooter(pageNumber, totalPages) {
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
+    doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: "center" });
   }
 
+  let firstGroup = true;
   for (const section of sections) {
-    const groupTitle = section.querySelector('.group-header span:first-child').textContent;
-    const groupCount = section.querySelector('.group-header span:last-child').textContent.trim();
-
-    const headers = Array.from(section.querySelectorAll('thead th')).map(th => th.textContent);
-    const body = Array.from(section.querySelectorAll('tbody tr')).map(tr =>
+    const groupTitle = section.querySelector(".group-header span:first-child").textContent;
+    const groupCount = section.querySelector(".group-header span:last-child").textContent.trim();
+    const headers = Array.from(section.querySelectorAll("thead th")).map(th => th.textContent);
+    const body = Array.from(section.querySelectorAll("tbody tr")).map(tr =>
       Array.from(tr.children).map(td => td.textContent)
     );
 
     if (!firstGroup) doc.addPage();
     else firstGroup = false;
 
-    drawGradientHeader(groupTitle, groupCount);
+    drawGradientHeader(groupTitle, groupCount, 50, true);
 
     doc.autoTable({
       head: [headers],
-      body: body,
-      startY: pageTopMargin + headerHeight + headerGap,
-      theme: 'grid',
-      headStyles: { fillColor: [239, 68, 68], halign: 'center', textColor: 255 },
+      body,
+      startY: firstPageTopMargin + groupHeaderHeight + headerGap,
+      theme: "grid",
+      headStyles: { fillColor: [239, 68, 68], halign: "center", textColor: 255 },
       styles: { fontSize: 9, cellPadding: 4 },
       margin: { left: leftMargin, right: rightMargin },
-      showHead: 'everyPage',
+      showHead: "everyPage",
       columnStyles: { 0: { cellWidth: 30 } },
       didDrawPage: function (data) {
-        drawGradientHeader(groupTitle, groupCount);
+        const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
         const totalPages = doc.internal.getNumberOfPages();
+        const isFirstPage = data.pageNumber === 1 || currentPage === 1;
+        const yOffset = isFirstPage ? 50 : 30;
+        drawGradientHeader(groupTitle, groupCount, yOffset, isFirstPage);
         drawFooter(data.pageNumber, totalPages);
-      }
+      },
+      pageBreak: "auto"
     });
   }
 
-  doc.save('TeTaiHouTeams.pdf');
+  doc.save("TeTaiHouTeams.pdf");
 });
 </script>
-
 </body>
 </html>
