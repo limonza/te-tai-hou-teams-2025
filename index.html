@@ -96,7 +96,15 @@ let indicativeIndex = -1;
 let clearedIndex = -1;
 let gdRegIndex = -1;
 
-const groupOrder = ["10U Dev","10U Elite","12U Dev","12U Elite","14U Black","14U Orange","14U Blaze","14U Flames","16U Dev","16U Elite","20U","Mens","Womens"];
+/* ✅ ADDED NEW TEAM HERE */
+const groupOrder = [
+  "10U Dev","10U Elite",
+  "12U Dev","12U Elite",
+  "Porirua Heat 12U",     // ✅ NEW TEAM INSERTED
+  "14U Black","14U Orange","14U Blaze","14U Flames",
+  "16U Dev","16U Elite",
+  "20U","Mens","Womens"
+];
 
 // --- Load CSV ---
 fetch('teams.csv')
@@ -125,7 +133,7 @@ function populateDropdowns() {
   gdRegValues.forEach(v => { const opt = document.createElement('option'); opt.value = v; opt.textContent = v; gdRegFilter.appendChild(opt); });
 }
 
-// --- Render HTML groups ---
+// --- Render Groups ---
 function renderGroups(rows) {
   container.innerHTML = '';
   const groups = rows.reduce((acc,r)=>{ const key=r[indicativeIndex]; (acc[key]??= []).push(r); return acc; }, {});
@@ -145,17 +153,16 @@ function renderGroups(rows) {
     const thead=document.createElement('thead'); const headerRow=document.createElement('tr');
 
     headers.forEach((h,i)=>{
-      if(i === indicativeIndex) return; // hide column
+      if(i === indicativeIndex) return;
       const th=document.createElement('th'); th.textContent=h; headerRow.appendChild(th);
     });
-
     thead.appendChild(headerRow); table.appendChild(thead);
-    const tbody=document.createElement('tbody');
 
+    const tbody=document.createElement('tbody');
     groupRows.forEach(r=>{
       const tr=document.createElement('tr');
       r.forEach((c,i)=>{
-        if(i === indicativeIndex) return; // hide column
+        if(i === indicativeIndex) return;
         const td=document.createElement('td');
         td.innerHTML=`<span>${c||''}</span>`;
         td.setAttribute('data-label',headers[i]);
@@ -165,7 +172,12 @@ function renderGroups(rows) {
     });
 
     table.appendChild(tbody); wrapper.appendChild(table); section.appendChild(wrapper); container.appendChild(section);
-    header.addEventListener('click',()=>{ wrapper.classList.toggle('hidden'); const arrow=header.querySelector('span:last-child'); arrow.textContent=wrapper.classList.contains('hidden')?`(${groupRows.length}) ▲`:`(${groupRows.length}) ▼`; });
+
+    header.addEventListener('click',()=>{
+      wrapper.classList.toggle('hidden');
+      const arrow=header.querySelector('span:last-child');
+      arrow.textContent=wrapper.classList.contains('hidden')?`(${groupRows.length}) ▲`:`(${groupRows.length}) ▼`;
+    });
   });
 }
 
@@ -203,8 +215,10 @@ gdRegFilter.addEventListener('change',applyFilters);
 
 // --- Export CSV ---
 exportBtn.addEventListener('click',()=>{
-  const rows=[]; const visibleHeaders=headers.filter((_,i)=>i!==indicativeIndex);
+  const rows=[]; 
+  const visibleHeaders=headers.filter((_,i)=>i!==indicativeIndex);
   rows.push(visibleHeaders.join(','));
+
   container.querySelectorAll('section').forEach(section=>{
     const wrapper=section.querySelector('.group-content');
     if(wrapper.classList.contains('hidden')) return;
@@ -212,8 +226,12 @@ exportBtn.addEventListener('click',()=>{
       rows.push(Array.from(tr.children).map(td=>td.textContent).join(','));
     });
   });
+
   const blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
-  const link=document.createElement('a'); link.href=URL.createObjectURL(blob); link.download='filtered_data.csv'; link.click();
+  const link=document.createElement('a'); 
+  link.href=URL.createObjectURL(blob); 
+  link.download='filtered_data.csv'; 
+  link.click();
 });
 
 // --- Toggle Groups ---
@@ -249,9 +267,10 @@ generatePDFBtn.addEventListener('click', () => {
 
       if(index>0) doc.addPage();
 
-      // Logo on top
+      // Logo scaling
       const aspectRatio = logoImg.width / logoImg.height;
-      const logoHeight = 15; const logoWidth = logoHeight * aspectRatio;
+      const logoHeight = 15; 
+      const logoWidth = logoHeight * aspectRatio;
       doc.addImage(logoImg, 'PNG', 14, 10, logoWidth, logoHeight);
 
       doc.setFontSize(16);
@@ -266,7 +285,11 @@ generatePDFBtn.addEventListener('click', () => {
         didDrawPage: function () {
           const page = doc.getCurrentPageInfo().pageNumber;
           doc.setFontSize(10);
-          doc.text(`Page ${page} of ${totalPages}`, doc.internal.pageSize.width - 40, doc.internal.pageSize.height - 10);
+          doc.text(
+            `Page ${page} of ${totalPages}`, 
+            doc.internal.pageSize.width - 40, 
+            doc.internal.pageSize.height - 10
+          );
         }
       });
     });
@@ -275,5 +298,6 @@ generatePDFBtn.addEventListener('click', () => {
   };
 });
 </script>
+
 </body>
 </html>
