@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Te Tai Hou Teams – Term 1 2026</title>
+
+<style>
+body {
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background-color: #f9fafb;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+  display: flex;
+  justify-content: center;
+}
+#page-wrapper { width: 100%; max-width: 75%; min-width: 320px; }
+header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px; }
+header img { height: 60px; border-radius: 50%; }
+header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
+.controls {
+  display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.controls input, .controls select, .controls button {
+  padding: 6px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.95em;
+}
+.controls button { background-color: #2b6cb0; color: white; cursor: pointer; }
+.controls button:hover { background-color: #1e4e8c; }
+section { margin-bottom: 1rem; border-radius: 0.75rem; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.1); overflow: hidden; }
+.group-header {
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 0.6rem 1rem;
+  background: linear-gradient(to right, #ef4444, #f97316);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+.group-content.hidden { display: none; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+thead th { background: #f3f4f6; position: sticky; top: 0; padding: 0.5rem; text-align: left; }
+tbody td { border-top: 1px solid #e5e7eb; padding: 0.4rem 0.5rem; word-wrap: break-word; }
+tbody tr:hover { background: #f9fafb; }
+</style>
+</head>
+
+<body>
+<div id="page-wrapper">
+
+<header>
+  <h1>TE TAI HOU TEAMS – 2026 TERM 1</h1>
+</header>
+
+<div class="controls">
+  <input id="search" type="text" placeholder="Search...">
+  <select id="selectionFilter"><option value="">All Teams</option></select>
+  <select id="clearedFilter"><option value="">All Cleared</option></select>
+  <select id="gdRegFilter"><option value="">All GD Regist.</option></select>
+</div>
+
+<div id="table-container"></div>
+
+</div>
+
+<script>
+const search = document.getElementById('search');
+const selectionFilter = document.getElementById('selectionFilter');
+const clearedFilter = document.getElementById('clearedFilter');
+const gdRegFilter = document.getElementById('gdRegFilter');
+const container = document.getElementById('table-container');
+
+let headers = [];
+let allRows = [];
+let indicativeIndex = -1;
+let clearedIndex = -1;
+let gdRegIndex = -1;
+
+const groupOrder = [
+  "10U - Coach - Pusa Ala",
+  "12U Elite - Coach - Kurt Falconer",
+  "14U Dev Orange - Coach - Emilina Motu",
+  "14U Elite Black - Coach - Nixon Penese",
+  "14U Elite Gold - Coach - Toa Madar",
+  "16U Elite Black - Coach - Nixon Penese",
+  "16U Elite Gold - Coach - Sariah Penese",
+  "18U Gold - Coach - Nixon Penese",
+  "18U Black - Coach - Yannis Sue",
+  "Mens - Coach - Nataliah Penese",
+  "Mastas - Womens - Coach - Ailani Penese",
+  "Teine - Womens - Coach - Nixon Penese"
+];
+
+
+// ✅ Proper CSV Parser (Handles quoted commas)
+function parseCSV(text) {
+  const rows = [];
+  const lines = text.split('\n');
+
+  for (let line of lines) {
+    let row = [];
+    let current = '';
+    let insideQuotes = false;
+
+    for (let char of line) {
+      if (char === '"') {
+        insideQuotes = !insideQuotes;
+      } else if (char === ',' && !insideQuotes) {
+        row.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    row.push(current);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+
+// --- Load CSV ---
+fetch('teams.csv')
+  .then(res => res.text())
+  .then(text => {
+    const lines = parseCSV(text.trim());
+    headers = lines[0].map(h => h.trim());
+
+    indicativeIndex = headers.findIndex(h => h.toLowerCase().includes('indicative'));
+    clearedIndex = headers.findIndex(h => h.toLowerCase().includes('cleared'));
+    gdRegIndex = headers.findIndex(h => h.toLowerCase().includes('gd'));
+
+    allRows = lines.slice(1)
+      .map(r => r.map(c => c.trim()))
+      .filter(r => r[indicativeIndex]);
+
+    populateDropdowns();
+    renderGroups(allRows);
+  });
+
+
+// --- Populate Dropdowns ---
+function populateDropdowns() {
+
+  selectionFilter.innerHTML = '<option value="">All Teams</option>';
+  clearedFilter.innerHTML = '<option value="">All Cleared</option>';
+  gdRegFilter.innerHTML = '<option value="">All GD Regist.</option>';
+
+  const teamValues = [...new Set(allRows.map(r => r[indicativeIndex]))];
+  const clearedValues = [...new Set(allRows.map(r => r[clearedIndex] || '(Blank)'))];
+  const gdRegValues = [...new Set(allRows.map(r => r[gdRegIndex] || '(Blank)'))];
+
+  [...groupOrder, ...teamValues.filter(v => !groupOrder.includes(v))]
+    .forEach(v => selectionFilter.innerHTML += `<option value="${v}">${v}</option>`);
+
+  clearedValues.forEach(v => clearedFilter.innerHTML += `<option value="${v}">${v}</option>`);
+  gdRegValues.forEach(v => gdRegFilter.innerHTML += `<option value="${v}">${v}</option>`);
+}
+
+
+// --- Render Groups ---
+function renderGroups(rows) {
+  container.innerHTML = '';
+
+  const groups = rows.reduce((acc,r)=>{
+    const key = r[indicativeIndex];
+    (acc[key] ??= []).push(r);
+    return acc;
+  },{});
+
+  Object.keys(groups).forEach(groupName=>{
+    const groupRows = groups[groupName];
+
+    const section = document.createElement('section');
+    const header = document.createElement('div');
+    header.className = 'group-header';
+    header.innerHTML = `<span>${groupName}</span><span>(${groupRows.length}) ▼</span>`;
+    section.appendChild(header);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'group-content';
+
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+
+    headers.forEach((h,i)=>{
+      if(i===indicativeIndex) return;
+      headerRow.innerHTML += `<th>${h}</th>`;
+    });
+
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+
+    groupRows.forEach(r=>{
+      const tr = document.createElement('tr');
+      r.forEach((c,i)=>{
+        if(i===indicativeIndex) return;
+        tr.innerHTML += `<td>${c||''}</td>`;
+      });
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    wrapper.appendChild(table);
+    section.appendChild(wrapper);
+    container.appendChild(section);
+
+    header.addEventListener('click',()=>{
+      wrapper.classList.toggle('hidden');
+    });
+  });
+}
+
+
+// --- Filters ---
+function applyFilters() {
+  const q = search.value.toLowerCase().trim();
+  const sel = selectionFilter.value;
+  const cleared = clearedFilter.value.toLowerCase();
+  const gdReg = gdRegFilter.value.toLowerCase();
+
+  const filtered = allRows.filter(r => {
+
+    const matchesSearch = !q || r.some(c =>
+      (c || '').toLowerCase().includes(q)
+    );
+
+    const matchesSel = !sel || r[indicativeIndex] === sel;
+
+    const matchesCleared = !cleared ||
+      (cleared === '(blank)'
+        ? !(r[clearedIndex])
+        : (r[clearedIndex]||'').toLowerCase() === cleared);
+
+    const matchesGD = !gdReg ||
+      (gdReg === '(blank)'
+        ? !(r[gdRegIndex])
+        : (r[gdRegIndex]||'').toLowerCase() === gdReg);
+
+    return matchesSearch && matchesSel && matchesCleared && matchesGD;
+  });
+
+  renderGroups(filtered);
+}
+
+search.addEventListener('input', applyFilters);
+selectionFilter.addEventListener('change', applyFilters);
+clearedFilter.addEventListener('change', applyFilters);
+gdRegFilter.addEventListener('change', applyFilters);
+
+</script>
+
+</body>
+</html>
