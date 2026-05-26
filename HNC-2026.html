@@ -119,7 +119,7 @@ function parseCSV(text) {
 
 
 // --- Load CSV ---
-fetch('teams.csv')
+fetch('HNC.csv')
   .then(res => res.text())
   .then(text => {
     const lines = parseCSV(text.trim());
