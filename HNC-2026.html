@@ -86,7 +86,6 @@ const groupOrder = [
   "16U A-Grade",
   "18U Elite Boys",
   "18U Elite Girls",
-  "Mens - Coach - Nataliah Penese"
 ];
 
 
@@ -142,8 +141,8 @@ fetch('HNC.csv')
 function populateDropdowns() {
 
   selectionFilter.innerHTML = '<option value="">All Teams</option>';
-  clearedFilter.innerHTML = '<option value="">All Cleared</option>';
-  gdRegFilter.innerHTML = '<option value="">All GD Regist.</option>';
+ // clearedFilter.innerHTML = '<option value="">All Cleared</option>';
+  //gdRegFilter.innerHTML = '<option value="">All GD Regist.</option>';
 
   const teamValues = [...new Set(allRows.map(r => r[indicativeIndex]))];
   const clearedValues = [...new Set(allRows.map(r => r[clearedIndex] || '(Blank)'))];
