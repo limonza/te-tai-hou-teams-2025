@@ -1,57 +1,68 @@
-Full Name,Email,Contact number,Indicative Selection,Flags
-Avis Seko,sekoasafo@gmail.com,+64 21 0258 6531,12U Development Boys,
-Brody Algar,algar6@gmail.com,+64 21 499 826,12U Development Boys,O
-Cruz Algar,algar6@gmail.com,+64 21 499 826,12U Development Boys,O
-Jason Auva'a,jauvaa@yahoo.com,+64 27 257 4457,12U Development Boys,
-Kahui Newport,aleynahall@gmail.com,+64 21 326 982,12U Development Boys,
-Kaito Tito,mikikitora@hotmail.com,+64 21 915 445,12U Development Boys,
-Lincoln Beets,adriannasouness@gmail.com,272863181,12U Development Boys,
-Nokise Ala,ala.pusa@gmail.com,+64 210 238 4821,12U Development Boys,
-Nixon Madar,toamadar@gmail.com,+64 21 118 6986,12U Elite Boys,
-Noah Ma Sun,eyezfisher@hotmail.com,,12U Elite Boys,Y
-Noah Madar,toamadar@gmail.com,+64 21 118 6986,12U Elite Boys,
-Reid Teleiu,matten.rona@gmail.com,,12U Elite Boys,
-Rocco de Graaff,wade.degraaff@outlook.com,+64 210 855 8224,12U Elite Boys,
-TJ Kie Tonga ,tkietonga@gmail.com,+64 21 240 9014,12U Elite Boys,
-Tyson Masaga,masagajon@gmail.com,+64 21 627 242,12U Elite Boys,
-Via Ala,ala.pusa@gmail.com,+64 210 238 4821,12U Elite Boys,
-Daniel Papali'i,sophie.papalii@outlook.com,+64 274 221 795,12U Elite Boys,
-Elijah Papali'i,,,14U Elite Boys,Y
-Jacob Penno,tribesmark@gmail.com,,14U Elite Boys,
-Joshua Penno,tribesmark@gmail.com,+64 0226786064,14U Elite Boys,
-Mason  Masaga,masagajon@gmail.com,+64 21 627 242,14U Elite Boys,
-Rex Lewis,ness.tenb@gmail.com,+64 22 151 4116,14U Elite Boys,
-Tyzo Tito,mikikitora@hotmail.com,+64 21 915 445,14U Elite Boys,
-Valhalla Kirk-Marsters,tashjeremy@hotmail.com,+64 27 971 8957,14U Elite Boys,
-Will Croasdale,tecroasdales@hotmail.com,+64 274 958 453,14U Elite Boys,
-Kaden Ruha,ruhacindy@gmail.com,,14U Elite Boys,
-Karel Weber-Leota ,karelstar02@gmail.com,+64 22 134 2070,14U Elite Boys,
-Sylvia Twigg,katetwigg45@gmail.com,277777212,14U Girls Elite,
-Aj Seko,sekoasafo@gmail.com,+64 210 258 6531,16U A-Grade Boys,
-Andvari Kirk-Marsters,tashjeremy@hotmail.com,+64 27 971 8957,16U A-Grade Boys,
-Carter Lockwood,pamgreenlee@xtra.co.nz,+64 27 567 3717,16U A-Grade Boys,
-Cody Fleming,garryfleming7@gmail.com,21505007,16U A-Grade Boys,
-Jakson Croasdale ,tecroasdales@hotmail.com,+64 274 958 453,16U A-Grade Boys,
-Kyle Tavai-Marshall,kylie_stills@hotmail.com,2041780175,16U A-Grade Boys,
-Taitum Onesemo,taitum.onesemo6@gmail.com,+64 210 420 897,16U A-Grade Boys,
-Taylor de Graaff,wade.degraaff@outlook.com,+64 27 359 3086,16U A-Grade Boys,
-Te Onepu Tamihana-Mason,tee.tamihana550@gmail.com,+64 29 122 1791,16U A-Grade Boys,
-Tyrelle You-gibson,tyougibson@gmail.com,+64 22 375 9470,16U A-Grade Boys,
-Van Newport,aleynahall@gmail.com,+64 21 326 982,16U A-Grade Boys,
-Ezekiel Motu,ezekiel.motu00@gmail.com,+64 210 834 7498,18U Elite Boys,
-Isaiah Collins,Leah.Kenny@ngatitoa.iwi.nz,,18U Elite Boys,Y
-Dayton-Peter Boladuadua,pearlboladuadua@gmail.com,,18U Elite Boys,Y
-Ian Balt,ian.balt16@gmail.com,+64 021 0831 6120,18U Elite Boys,
-Jonny  Pine,bex07@xtra.co.nz,+64 27 601 5033,18U Elite Boys,
-Josh Matatia,,,18U Elite Boys,Y
-Kauri Rewiti,Kristy.reweti@gmail.com ,+64 021 0284 0904,18U Elite Boys,
-Maraki Edwards ,marakiedwards7@gmail.com,+64 27 364 1743,18U Elite Boys,
-Taylah Ford,Izzy.ford.03@gmail.com,+64 027 305 1649 ,18U Elite Boys,
-Fo'i Saulemana,ogelemana@yahoo.com,+64 027 519 0408,18U Elite Girls,Y
-Jordy Peleti,,,18U Elite Girls,Y
-Leona Penese,penese8@gmail.com,+64 27 273 1526,18U Elite Girls,
-Leti Auva'a,,,18U Elite Girls,Y
-Nahala Toeliu,mattea.rona@gmail.com,,18U Elite Girls,Y
-Payton Toeliu,mattea.rona@gmail.com,,18U Elite Girls,Y
-Sienna Letoa-Tuala,,,18U Elite Girls,Y
-Tapuitea Matatia,pipmatatia@gmail.com,+64 021 250 7300,18U Elite Girls,Y
+Full Name,Email,Contact number,Indicative Selection,Flags,Paid,Warmup Top
+Avis Seko,sekoasafo@gmail.com,+64 21 0258 6531,12U Development Boys,,0,
+Brody Algar,algar6@gmail.com,+64 21 499 826,12U Development Boys,O,0,
+Cruz Algar,algar6@gmail.com,+64 21 499 826,12U Development Boys,O,30,
+Jason Auva'a,jauvaa@yahoo.com,+64 27 257 4457,12U Development Boys,,165,
+Kahui Newport,aleynahall@gmail.com,+64 21 326 982,12U Development Boys,,165,
+Kaito Tito,mikikitora@hotmail.com,+64 21 915 445,12U Development Boys,,165,65
+Lincoln Beets,adriannasouness@gmail.com,272863181,12U Development Boys,,0,
+Nokise Ala,ala.pusa@gmail.com,+64 210 238 4821,12U Development Boys,,0,
+Zac Falconer ,rebond023@gmail.com,+64 274 624 833,12U Development Boys,,0,
+Nixon Madar,toamadar@gmail.com,+64 21 118 6986,12U Elite Boys,,0,
+Noah Ma Sun,eyezfisher@hotmail.com,,12U Elite Boys,Y,0,
+Noah Madar,toamadar@gmail.com,+64 21 118 6986,12U Elite Boys,,0,
+Reid Toeliu,matten.rona@gmail.com,,12U Elite Boys,,0,
+Rocco de Graaff,wade.degraaff@outlook.com,+64 210 855 8224,12U Elite Boys,,0,
+TJ Kie Tonga ,tkietonga@gmail.com,+64 21 240 9014,12U Elite Boys,,0,
+Tyson Masaga,masagajon@gmail.com,+64 21 627 242,12U Elite Boys,,165,
+Via Ala,ala.pusa@gmail.com,+64 210 238 4821,12U Elite Boys,,0,
+Daniel Papali'i,sophie.papalii@outlook.com,+64 274 221 795,12U Elite Boys,,165,65
+Elijah Papali'i,,,14U Elite Boys,Y,165,65
+Jacob Penno,tribesmark@gmail.com,,14U Elite Boys,,0,
+Joshua Penno,tribesmark@gmail.com,+64 0226786064,14U Elite Boys,,0,
+Mason  Masaga,masagajon@gmail.com,+64 21 627 242,14U Elite Boys,,165,
+Rex Lewis,ness.tenb@gmail.com,+64 22 151 4116,14U Elite Boys,,0,
+Tyzo Tito,mikikitora@hotmail.com,+64 21 915 445,14U Elite Boys,,165,65
+Valhalla Kirk-Marsters,tashjeremy@hotmail.com,+64 27 971 8957,14U Elite Boys,,0,
+Will Croasdale,tecroasdales@hotmail.com,+64 274 958 453,14U Elite Boys,,0,
+Kaden Ruha,ruhacindy@gmail.com,,14U Elite Boys,,0,
+Karel Weber-Leota ,karelstar02@gmail.com,+64 22 134 2070,14U Elite Boys,,0,
+Zara Nolastname,,,14U Elite Girls,,0,
+Amy Nolastname,,,14U Elite Girls,,0,
+Ameia Nolastname,,,14U Elite Girls,,0,
+Luca Nolastname,,,14U Elite Girls,,0,
+Chanelle Nolastname,,,14U Elite Girls,,0,
+Sylvia Twigg,katetwigg45@gmail.com,277777212,14U Girls Elite,,165,
+Charlotte Nolastname,,,14U Girls Elite,,0,
+Measina Matatia,,,14U Girls Elite,,165,
+Aj Seko,sekoasafo@gmail.com,+64 210 258 6531,16U A-Grade Boys,,0,
+Andvari Kirk-Marsters,tashjeremy@hotmail.com,+64 27 971 8957,16U A-Grade Boys,,0,
+Carter Lockwood,pamgreenlee@xtra.co.nz,+64 27 567 3717,16U A-Grade Boys,,165,65
+Cody Fleming,garryfleming7@gmail.com,21505007,16U A-Grade Boys,,0,
+Jakson Croasdale ,tecroasdales@hotmail.com,+64 274 958 453,16U A-Grade Boys,,0,
+Kyle Tavai-Marshall,kylie_stills@hotmail.com,2041780175,16U A-Grade Boys,,0,
+Taitum Onesemo,taitum.onesemo6@gmail.com,+64 210 420 897,16U A-Grade Boys,,165,
+Taylor de Graaff,wade.degraaff@outlook.com,+64 27 359 3086,16U A-Grade Boys,,165,65
+Te Onepu Tamihana-Mason,tee.tamihana550@gmail.com,+64 29 122 1791,16U A-Grade Boys,,0,
+Tyrelle You-gibson,tyougibson@gmail.com,+64 22 375 9470,16U A-Grade Boys,,0,
+Van Newport,aleynahall@gmail.com,+64 21 326 982,16U A-Grade Boys,,165,
+Ezekiel Motu,ezekiel.motu00@gmail.com,+64 210 834 7498,18U Elite Boys,,0,
+Isaiah Collins,Leah.Kenny@ngatitoa.iwi.nz,,18U Elite Boys,Y,0,
+Dayton-Peter Boladuadua,pearlboladuadua@gmail.com,,18U Elite Boys,Y,0,
+Ian Balt,ian.balt16@gmail.com,+64 021 0831 6120,18U Elite Boys,,165,
+Jonny  Pine,bex07@xtra.co.nz,+64 27 601 5033,18U Elite Boys,,0,65
+Josh Matatia,,,18U Elite Boys,Y,165,
+Kauri Reweti,Kristy.reweti@gmail.com ,+64 021 0284 0904,18U Elite Boys,,165,65
+Maraki Edwards ,marakiedwards7@gmail.com,+64 27 364 1743,18U Elite Boys,,0,
+Taylah Ford,Izzy.ford.03@gmail.com,+64 027 305 1649 ,18U Elite Boys,,0,
+Fo'i Saulemana,ogelemana@yahoo.com,+64 027 519 0408,18U Elite Girls,Y,165,
+Jordy Peleti,,,18U Elite Girls,Y,100,
+Leona Penese,penese8@gmail.com,+64 27 273 1526,18U Elite Girls,,0,
+Leti Auva'a,,,18U Elite Girls,Y,100,
+Nahala Toeliu,mattea.rona@gmail.com,,18U Elite Girls,Y,165,
+Payton Toeliu,mattea.rona@gmail.com,,18U Elite Girls,Y,165,
+Sienna Letoa-Tuala,,,18U Elite Girls,Y,165,
+Tapuitea Matatia,pipmatatia@gmail.com,+64 021 250 7300,18U Elite Girls,Y,165,
+Adi Pelenise,,,18U Elite Girls,,165,
+Gia Bishop,randallb@mana.school.nz,,18U Elite Girls,,165,
+Ameia Williams,,,18U Elite Girls,,100,
