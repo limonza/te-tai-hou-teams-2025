@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Hoop Nations Classic 2026</title>
 
 <style>
@@ -15,19 +16,57 @@ body {
   display: flex;
   justify-content: center;
 }
-#page-wrapper { width: 100%; max-width: 75%; min-width: 320px; }
-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px; }
-header img { height: 60px; border-radius: 50%; }
-header h1 { font-size: 1.8em; margin: 0; color: #1a365d; }
+
+#page-wrapper {
+  width: 100%;
+  max-width: 75%;
+  min-width: 320px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 1.8em;
+  margin: 0;
+  color: #1a365d;
+}
+
 .controls {
-  display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
-.controls input, .controls select, .controls button {
-  padding: 6px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.95em;
+
+.controls input,
+.controls select,
+.controls button {
+  padding: 6px 10px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 0.95em;
 }
-.controls button { background-color: #2b6cb0; color: white; cursor: pointer; }
-.controls button:hover { background-color: #1e4e8c; }
-section { margin-bottom: 1rem; border-radius: 0.75rem; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.1); overflow: hidden; }
+
+.controls input {
+  min-width: 220px;
+}
+
+section {
+  margin-bottom: 1rem;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
 .group-header {
   font-weight: 600;
   font-size: 1.1rem;
@@ -39,15 +78,61 @@ section { margin-bottom: 1rem; border-radius: 0.75rem; background: #fff; box-sha
   align-items: center;
   cursor: pointer;
 }
-.group-content.hidden { display: none; }
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
-thead th { background: #f3f4f6; position: sticky; top: 0; padding: 0.5rem; text-align: left; }
-tbody td { border-top: 1px solid #e5e7eb; padding: 0.4rem 0.5rem; word-wrap: break-word; }
-tbody tr:hover { background: #f9fafb; }
+
+.group-content.hidden {
+  display: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  table-layout: fixed;
+}
+
+thead th {
+  background: #f3f4f6;
+  padding: 0.5rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+tbody td {
+  border-top: 1px solid #e5e7eb;
+  padding: 0.45rem 0.5rem;
+  word-wrap: break-word;
+}
+
+tbody tr:hover {
+  background: #f9fafb;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  background: #fff;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  #page-wrapper {
+    max-width: 100%;
+  }
+
+  header h1 {
+    font-size: 1.4em;
+  }
+
+  table {
+    font-size: 0.8rem;
+  }
+}
 </style>
 </head>
 
 <body>
+
 <div id="page-wrapper">
 
 <header>
@@ -55,10 +140,19 @@ tbody tr:hover { background: #f9fafb; }
 </header>
 
 <div class="controls">
-  <input id="search" type="text" placeholder="Search...">
-  <select id="selectionFilter"><option value="">All Teams</option></select>
-  <select id="clearedFilter"><option value="">All Cleared</option></select>
-  <select id="gdRegFilter"><option value="">All GD Regist.</option></select>
+  <input id="search" type="text" placeholder="Search name, email, contact...">
+
+  <select id="selectionFilter">
+    <option value="">All Teams</option>
+  </select>
+
+  <select id="settledFilter">
+    <option value="">All Settled</option>
+  </select>
+
+  <select id="wutSettledFilter">
+    <option value="">All WUT Settled</option>
+  </select>
 </div>
 
 <div id="table-container"></div>
@@ -66,189 +160,305 @@ tbody tr:hover { background: #f9fafb; }
 </div>
 
 <script>
-const search = document.getElementById('search');
-const selectionFilter = document.getElementById('selectionFilter');
-const clearedFilter = document.getElementById('clearedFilter');
-const gdRegFilter = document.getElementById('gdRegFilter');
-const container = document.getElementById('table-container');
+const search = document.getElementById("search");
+const selectionFilter = document.getElementById("selectionFilter");
+const settledFilter = document.getElementById("settledFilter");
+const wutSettledFilter = document.getElementById("wutSettledFilter");
+const container = document.getElementById("table-container");
 
 let headers = [];
 let allRows = [];
-let indicativeIndex = -1;
-let clearedIndex = -1;
-let gdRegIndex = -1;
 
+let teamIndex = -1;
+let settledIndex = -1;
+let wutSettledIndex = -1;
+
+// Optional preferred order.
+// Add your exact team names here if you want a custom display order.
 const groupOrder = [
-  "12U Elite Boys",
-  "12U Development Boys",
-  "14U Elite Boys",
-  "14U Elite Girls",
-  "16U A-Grade",
-  "18U Elite Boys",
-  "18U Elite Girls",
+  "12U Boys Development - Coach Pusa Ala - Manager"
 ];
 
-
-// ✅ Proper CSV Parser (Handles quoted commas)
+// Proper CSV parser for quoted commas
 function parseCSV(text) {
   const rows = [];
-  const lines = text.split('\n');
+  const lines = text.replace(/\r/g, "").split("\n");
 
   for (let line of lines) {
-    let row = [];
-    let current = '';
+    if (!line.trim()) continue;
+
+    const row = [];
+    let current = "";
     let insideQuotes = false;
 
-    for (let char of line) {
-      if (char === '"') {
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+
+      if (char === '"' && insideQuotes && nextChar === '"') {
+        current += '"';
+        i++;
+      } else if (char === '"') {
         insideQuotes = !insideQuotes;
-      } else if (char === ',' && !insideQuotes) {
-        row.push(current);
-        current = '';
+      } else if (char === "," && !insideQuotes) {
+        row.push(current.trim());
+        current = "";
       } else {
         current += char;
       }
     }
-    row.push(current);
+
+    row.push(current.trim());
     rows.push(row);
   }
 
   return rows;
 }
 
-
-// --- Load CSV ---
-fetch('HNC.csv')
-  .then(res => res.text())
+// Load CSV
+fetch("HNC.csv")
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("Could not load HNC.csv");
+    }
+    return response.text();
+  })
   .then(text => {
-    const lines = parseCSV(text.trim());
-    headers = lines[0].map(h => h.trim());
+    const rows = parseCSV(text.trim());
 
-    indicativeIndex = headers.findIndex(h => h.toLowerCase().includes('indicative'));
-    clearedIndex = headers.findIndex(h => h.toLowerCase().includes('cleared'));
-    gdRegIndex = headers.findIndex(h => h.toLowerCase().includes('gd'));
+    headers = rows[0].map(h => h.trim());
 
-    allRows = lines.slice(1)
-      .map(r => r.map(c => c.trim()))
-      .filter(r => r[indicativeIndex]);
+    teamIndex = headers.findIndex(h =>
+      h.toLowerCase().includes("team")
+    );
+
+    settledIndex = headers.findIndex(h =>
+      h.toLowerCase() === "settled"
+    );
+
+    wutSettledIndex = headers.findIndex(h =>
+      h.toLowerCase().includes("wut settled")
+    );
+
+    console.log("Headers:", headers);
+    console.log({
+      teamIndex,
+      settledIndex,
+      wutSettledIndex
+    });
+
+    if (teamIndex === -1) {
+      container.innerHTML = `
+        <div class="empty-message">
+          Could not find a Team column. Please check your CSV header.
+        </div>
+      `;
+      return;
+    }
+
+    allRows = rows
+      .slice(1)
+      .map(row => {
+        while (row.length < headers.length) row.push("");
+        return row.map(c => c.trim());
+      })
+      .filter(row => row[teamIndex]);
 
     populateDropdowns();
     renderGroups(allRows);
+  })
+  .catch(error => {
+    container.innerHTML = `
+      <div class="empty-message">
+        Error loading CSV: ${error.message}
+      </div>
+    `;
   });
 
-
-// --- Populate Dropdowns ---
+// Populate filters
 function populateDropdowns() {
+  selectionFilter.innerHTML = `<option value="">All Teams</option>`;
+  settledFilter.innerHTML = `<option value="">All Settled</option>`;
+  wutSettledFilter.innerHTML = `<option value="">All WUT Settled</option>`;
 
-  selectionFilter.innerHTML = '<option value="">All Teams</option>';
- // clearedFilter.innerHTML = '<option value="">All Cleared</option>';
-  //gdRegFilter.innerHTML = '<option value="">All GD Regist.</option>';
+  const teamValues = [...new Set(allRows.map(r => r[teamIndex] || ""))]
+    .filter(Boolean);
 
-  const teamValues = [...new Set(allRows.map(r => r[indicativeIndex]))];
-  const clearedValues = [...new Set(allRows.map(r => r[clearedIndex] || '(Blank)'))];
-  const gdRegValues = [...new Set(allRows.map(r => r[gdRegIndex] || '(Blank)'))];
+  const settledValues = settledIndex === -1
+    ? []
+    : [...new Set(allRows.map(r => r[settledIndex] || "(Blank)"))];
 
-  [...groupOrder, ...teamValues.filter(v => !groupOrder.includes(v))]
-    .forEach(v => selectionFilter.innerHTML += `<option value="${v}">${v}</option>`);
+  const wutSettledValues = wutSettledIndex === -1
+    ? []
+    : [...new Set(allRows.map(r => r[wutSettledIndex] || "(Blank)"))];
 
-  clearedValues.forEach(v => clearedFilter.innerHTML += `<option value="${v}">${v}</option>`);
-  gdRegValues.forEach(v => gdRegFilter.innerHTML += `<option value="${v}">${v}</option>`);
+  const orderedTeams = [
+    ...groupOrder.filter(team => teamValues.includes(team)),
+    ...teamValues.filter(team => !groupOrder.includes(team)).sort()
+  ];
+
+  orderedTeams.forEach(value => {
+    selectionFilter.innerHTML += `<option value="${escapeHTML(value)}">${escapeHTML(value)}</option>`;
+  });
+
+  settledValues.sort().forEach(value => {
+    settledFilter.innerHTML += `<option value="${escapeHTML(value)}">${escapeHTML(value)}</option>`;
+  });
+
+  wutSettledValues.sort().forEach(value => {
+    wutSettledFilter.innerHTML += `<option value="${escapeHTML(value)}">${escapeHTML(value)}</option>`;
+  });
 }
 
-
-// --- Render Groups ---
+// Render grouped tables
 function renderGroups(rows) {
-  container.innerHTML = '';
+  container.innerHTML = "";
 
-  const groups = rows.reduce((acc,r)=>{
-    const key = r[indicativeIndex];
-    (acc[key] ??= []).push(r);
+  if (!rows.length) {
+    container.innerHTML = `
+      <div class="empty-message">
+        No records found.
+      </div>
+    `;
+    return;
+  }
+
+  const groups = rows.reduce((acc, row) => {
+    const key = row[teamIndex] || "No Team";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(row);
     return acc;
-  },{});
+  }, {});
 
-  Object.keys(groups).forEach(groupName=>{
+  const orderedGroupNames = [
+    ...groupOrder.filter(name => groups[name]),
+    ...Object.keys(groups)
+      .filter(name => !groupOrder.includes(name))
+      .sort()
+  ];
+
+  orderedGroupNames.forEach(groupName => {
     const groupRows = groups[groupName];
 
-    const section = document.createElement('section');
-    const header = document.createElement('div');
-    header.className = 'group-header';
-    header.innerHTML = `<span>${groupName}</span><span>(${groupRows.length}) ▼</span>`;
-    section.appendChild(header);
+    const section = document.createElement("section");
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'group-content';
+    const groupHeader = document.createElement("div");
+    groupHeader.className = "group-header";
+    groupHeader.innerHTML = `
+      <span>${escapeHTML(groupName)}</span>
+      <span>${groupRows.length} ▼</span>
+    `;
 
-    const table = document.createElement('table');
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
+    const wrapper = document.createElement("div");
+    wrapper.className = "group-content";
 
-    headers.forEach((h,i)=>{
-      if(i===indicativeIndex) return;
-      headerRow.innerHTML += `<th>${h}</th>`;
+    const table = document.createElement("table");
+
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+
+    headers.forEach((header, index) => {
+      if (index === teamIndex) return;
+
+      const th = document.createElement("th");
+      th.textContent = header;
+      headerRow.appendChild(th);
     });
 
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
-    const tbody = document.createElement('tbody');
+    const tbody = document.createElement("tbody");
 
-    groupRows.forEach(r=>{
-      const tr = document.createElement('tr');
-      r.forEach((c,i)=>{
-        if(i===indicativeIndex) return;
-        tr.innerHTML += `<td>${c||''}</td>`;
+    groupRows.forEach(row => {
+      const tr = document.createElement("tr");
+
+      row.forEach((cell, index) => {
+        if (index === teamIndex) return;
+
+        const td = document.createElement("td");
+        td.textContent = cell || "";
+        tr.appendChild(td);
       });
+
       tbody.appendChild(tr);
     });
 
     table.appendChild(tbody);
     wrapper.appendChild(table);
+
+    section.appendChild(groupHeader);
     section.appendChild(wrapper);
     container.appendChild(section);
 
-    header.addEventListener('click',()=>{
-      wrapper.classList.toggle('hidden');
+    groupHeader.addEventListener("click", () => {
+      wrapper.classList.toggle("hidden");
+
+      const countText = wrapper.classList.contains("hidden")
+        ? `${groupRows.length} ▶`
+        : `${groupRows.length} ▼`;
+
+      groupHeader.querySelector("span:last-child").textContent = countText;
     });
   });
 }
 
-
-// --- Filters ---
+// Apply filters
 function applyFilters() {
-  const q = search.value.toLowerCase().trim();
-  const sel = selectionFilter.value;
-  const cleared = clearedFilter.value.toLowerCase();
-  const gdReg = gdRegFilter.value.toLowerCase();
+  const query = search.value.toLowerCase().trim();
+  const selectedTeam = selectionFilter.value;
+  const selectedSettled = settledFilter.value.toLowerCase();
+  const selectedWutSettled = wutSettledFilter.value.toLowerCase();
 
-  const filtered = allRows.filter(r => {
+  const filtered = allRows.filter(row => {
+    const matchesSearch =
+      !query ||
+      row.some(cell =>
+        (cell || "").toLowerCase().includes(query)
+      );
 
-    const matchesSearch = !q || r.some(c =>
-      (c || '').toLowerCase().includes(q)
-    );
+    const matchesTeam =
+      !selectedTeam ||
+      row[teamIndex] === selectedTeam;
 
-    const matchesSel = !sel || r[indicativeIndex] === sel;
+    const matchesSettled =
+      settledIndex === -1 ||
+      !selectedSettled ||
+      (
+        selectedSettled === "(blank)"
+          ? !(row[settledIndex])
+          : (row[settledIndex] || "").toLowerCase() === selectedSettled
+      );
 
-    const matchesCleared = !cleared ||
-      (cleared === '(blank)'
-        ? !(r[clearedIndex])
-        : (r[clearedIndex]||'').toLowerCase() === cleared);
+    const matchesWutSettled =
+      wutSettledIndex === -1 ||
+      !selectedWutSettled ||
+      (
+        selectedWutSettled === "(blank)"
+          ? !(row[wutSettledIndex])
+          : (row[wutSettledIndex] || "").toLowerCase() === selectedWutSettled
+      );
 
-    const matchesGD = !gdReg ||
-      (gdReg === '(blank)'
-        ? !(r[gdRegIndex])
-        : (r[gdRegIndex]||'').toLowerCase() === gdReg);
-
-    return matchesSearch && matchesSel && matchesCleared && matchesGD;
+    return matchesSearch && matchesTeam && matchesSettled && matchesWutSettled;
   });
 
   renderGroups(filtered);
 }
 
-search.addEventListener('input', applyFilters);
-selectionFilter.addEventListener('change', applyFilters);
-clearedFilter.addEventListener('change', applyFilters);
-gdRegFilter.addEventListener('change', applyFilters);
+// Escape values before inserting into HTML
+function escapeHTML(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
+search.addEventListener("input", applyFilters);
+selectionFilter.addEventListener("change", applyFilters);
+settledFilter.addEventListener("change", applyFilters);
+wutSettledFilter.addEventListener("change", applyFilters);
 </script>
 
 </body>
